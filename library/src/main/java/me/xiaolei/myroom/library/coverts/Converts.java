@@ -29,7 +29,7 @@ public class Converts
         converts.offer(new ByteConvert());
         converts.offer(new CharBoxConvert());
         converts.offer(new CharConvert());
-        converts.offer(new CharSequenceConvert());
+        converts.offer(new StringConvert());
         converts.offer(new DoubleBoxConvert());
         converts.offer(new DoubleConvert());
         converts.offer(new FloatBoxConvert());

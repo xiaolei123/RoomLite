@@ -6,6 +6,7 @@ import androidx.room.Room;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import me.xiaolei.myroom.library.RoomLite;
@@ -31,7 +32,7 @@ public class MainActivity extends AppCompatActivity
                 .allowMainThreadQueries()
                 .build();
         PeopleDao peopleDao = db.peopleDao();
-        
+
         text.setOnClickListener(v ->
         {
             roomLite(userDao);
@@ -41,12 +42,28 @@ public class MainActivity extends AppCompatActivity
 
     private void roomLite(UserDao dao)
     {
-        System.out.println("---------");
-        
+        List<User> list = new LinkedList<User>()
+        {
+            {
+                add(new User());
+                add(new User());
+                add(new User());
+                add(new User());
+            }
+        };
+        User[] array = new User[]{
+                new User(),
+                new User(),
+                new User(),
+                new User(),
+        };
+        User single = new User();
+
         long old_time = System.currentTimeMillis();
-        List<User> user = dao.queryAll();
-        System.out.println("RoomLite-耗时:" + (System.currentTimeMillis() - old_time));
-        System.out.println(user);
+
+        dao.addUser(list, array, single);
+        System.out.println("耗时：" + (System.currentTimeMillis() - old_time));
+        System.out.println("");
     }
 
     private void room(PeopleDao dao)

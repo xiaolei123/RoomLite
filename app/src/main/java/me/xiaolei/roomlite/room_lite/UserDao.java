@@ -4,11 +4,22 @@ package me.xiaolei.roomlite.room_lite;
 import java.util.List;
 
 import me.xiaolei.myroom.library.anno.dao.Dao;
+import me.xiaolei.myroom.library.anno.dao.Insert;
 import me.xiaolei.myroom.library.anno.dao.Query;
 
 @Dao
 public interface UserDao
 {
+
+    @Insert
+    int addUser(User user);
+
+    @Insert
+    int addUser(User[] user);
+
+    @Insert
+    void addUser(List<User> list, User[] array, User single);
+
     // 查询所有
     @Query(entity = User.class)
     public List<User> queryAll();

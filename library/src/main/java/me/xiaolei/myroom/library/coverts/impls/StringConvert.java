@@ -2,11 +2,11 @@ package me.xiaolei.myroom.library.coverts.impls;
 
 import me.xiaolei.myroom.library.coverts.base.ToStringConvert;
 
-public class CharSequenceConvert extends ToStringConvert
+public class StringConvert extends ToStringConvert
 {
-    public CharSequenceConvert()
+    public StringConvert()
     {
-        super(CharSequence.class);
+        super(String.class);
     }
 
     @Override

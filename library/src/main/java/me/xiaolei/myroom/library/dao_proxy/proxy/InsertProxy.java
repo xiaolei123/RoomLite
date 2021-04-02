@@ -73,7 +73,7 @@ public class InsertProxy extends DaoProxy
             }
             // 获取类当前的表名
             String tableName = RoomLiteUtil.getTableName(klass);
-            
+
             LiteRunnable<Integer> runnable = (database) ->
             {
                 int count = 0;
@@ -82,7 +82,8 @@ public class InsertProxy extends DaoProxy
                 {
                     for (ContentValues contentValue : contentValues)
                     {
-                        count += database.insert(tableName, null, contentValue);
+                        database.insert(tableName, null, contentValue);
+                        count++;
                     }
                     database.setTransactionSuccessful();
                 } finally
