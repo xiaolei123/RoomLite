@@ -1,21 +1,14 @@
-package me.xiaolei.myroom;
+package me.xiaolei.roomlite;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Query;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.TextView;
 
-import java.util.Arrays;
-import java.util.List;
-
-import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
 import me.xiaolei.myroom.library.RoomLite;
-import me.xiaolei.myroom.roomlite.User;
-import me.xiaolei.myroom.roomlite.UserDao;
+import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -32,7 +25,6 @@ public class MainActivity extends AppCompatActivity
         text.setOnClickListener(v ->
         {
             long old_time = System.currentTimeMillis();
-            
             User user = dao.query();
             System.out.println(System.currentTimeMillis() - old_time);
             System.out.println(user);
@@ -46,28 +38,28 @@ public class MainActivity extends AppCompatActivity
             // 数据库名称
             super("school");
         }
-        
+
         // 所有的表Entity
         @Override
         public Class<?>[] getEntities()
         {
             return new Class[]{User.class};
         }
-        
+
         // 是否允许在主线程中执行
         @Override
         public boolean allowRunOnUIThread()
         {
             return true;
         }
-        
+
         // 数据库升级
         @Override
         public void onUpgrade(@Nullable SQLiteDatabase db, int oldVersion, int newVersion)
         {
-            
+
         }
-        
+
         // 数据库版本
         @Override
         public int version()

@@ -1,9 +1,10 @@
-package me.xiaolei.myroom.roomlite;
+package me.xiaolei.roomlite;
 
 
 import java.util.List;
 
-import me.xiaolei.myroom.library.anno.dao.*;
+import me.xiaolei.myroom.library.anno.dao.Dao;
+import me.xiaolei.myroom.library.anno.dao.Query;
 
 @Dao
 public interface UserDao
