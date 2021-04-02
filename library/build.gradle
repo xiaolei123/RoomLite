@@ -1,0 +1,20 @@
+plugins {
+    id 'com.android.library'
+    id 'com.github.dcendents.android-maven'
+}
+
+android {
+    compileSdkVersion 30
+    defaultConfig {
+        minSdkVersion 16
+        multiDexEnabled true
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    compileOnly 'androidx.annotation:annotation:1.2.0'
+}
