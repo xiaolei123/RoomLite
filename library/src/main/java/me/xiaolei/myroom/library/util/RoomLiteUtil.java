@@ -228,44 +228,6 @@ public class RoomLiteUtil
     }
 
     /**
-     * 判断第一个Type是不是第二个Type的子类，或者是实现类
-     *
-     * @param type
-     * @param ofType
-     */
-    public static boolean isSameTypeOf(Class<?> type, Class<?> ofType)
-    {
-        if (type == ofType)
-        {
-            return true;
-        } else
-        {
-            Class<?> superClass = type.getSuperclass();
-            if (superClass == null)
-            {
-                return false;
-            } else if (superClass == ofType)
-            {
-                return true;
-            } else if (superClass == Object.class)
-            {
-                Class<?>[] interfaces = type.getInterfaces();
-                for (Class<?> anInterface : interfaces)
-                {
-                    if (anInterface == ofType)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            } else
-            {
-                return isSameTypeOf(superClass, ofType);
-            }
-        }
-    }
-
-    /**
      * 根据类型，获取默认值
      *
      * @param klass

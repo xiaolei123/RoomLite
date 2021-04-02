@@ -47,7 +47,7 @@ public abstract class Convert
     {
         return null;
     }
-    
+
 
     /**
      * 判断传入的Java类型，是否是同一个类型，这里需要特殊处理父类，和接口类型
@@ -58,7 +58,7 @@ public abstract class Convert
     public boolean isSameType(Class<?> type)
     {
         Class<?> javaType = this.getJavaType();
-        return RoomLiteUtil.isSameTypeOf(type, javaType);
+        return type == javaType;
     }
 
     public Byte convertToByte(Object javaObj)

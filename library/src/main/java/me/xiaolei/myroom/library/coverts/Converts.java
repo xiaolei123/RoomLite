@@ -49,12 +49,20 @@ public class Converts
      */
     public static boolean hasBaseConvert(Class<?> javaType)
     {
-        for (Convert convert : converts)
+        return getBaseConvert(javaType) != null;
+    }
+
+    /**
+     * 检查传入的类型，获取基本的支持的类型
+     */
+    public static Convert getBaseConvert(Class<?> javaType)
+    {
+        for (Convert convert : baseConverts)
         {
             if (convert.isSameType(javaType))
-                return true;
+                return convert;
         }
-        return false;
+        return null;
     }
 
     /**
