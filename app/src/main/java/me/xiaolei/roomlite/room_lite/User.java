@@ -1,4 +1,4 @@
-package me.xiaolei.roomlite;
+package me.xiaolei.roomlite.room_lite;
 
 
 import android.graphics.Bitmap;

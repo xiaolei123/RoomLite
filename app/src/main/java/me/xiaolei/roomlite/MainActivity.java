@@ -1,14 +1,16 @@
 package me.xiaolei.roomlite;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
 
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.widget.TextView;
 
 import me.xiaolei.myroom.library.RoomLite;
-import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
+import me.xiaolei.roomlite.room.PeopleDao;
+import me.xiaolei.roomlite.room.RoomDataBase;
+import me.xiaolei.roomlite.room_lite.LiteDataBase;
+import me.xiaolei.roomlite.room_lite.UserDao;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -18,53 +20,37 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        DataBase dataBase = RoomLite.build(DataBase.class);
-        UserDao dao = dataBase.getDao(UserDao.class);
-
         TextView text = findViewById(R.id.text);
+
+        LiteDataBase dataBase = RoomLite.build(LiteDataBase.class);
+        UserDao userDao = dataBase.getDao(UserDao.class);
+        RoomDataBase db = Room.databaseBuilder(getApplicationContext(), RoomDataBase.class, "peoples")
+                .allowMainThreadQueries()
+                .build();
+        PeopleDao peopleDao = db.peopleDao();
+        
         text.setOnClickListener(v ->
         {
-            long old_time = System.currentTimeMillis();
-            User user = dao.query();
-            System.out.println(System.currentTimeMillis() - old_time);
-            System.out.println(user);
+            roomLite(userDao);
+            room(peopleDao);
         });
     }
 
-    public static class DataBase extends RoomLiteDatabase
+    private void roomLite(UserDao dao)
     {
-        public DataBase()
-        {
-            // 数据库名称
-            super("school");
-        }
+        System.out.println("---------");
+        
+        long old_time = System.currentTimeMillis();
+        int user = dao.firstId();
+        System.out.println("RoomLite-耗时:" + (System.currentTimeMillis() - old_time));
+        //System.out.println(user);
+    }
 
-        // 所有的表Entity
-        @Override
-        public Class<?>[] getEntities()
-        {
-            return new Class[]{User.class};
-        }
-
-        // 是否允许在主线程中执行
-        @Override
-        public boolean allowRunOnUIThread()
-        {
-            return true;
-        }
-
-        // 数据库升级
-        @Override
-        public void onUpgrade(@Nullable SQLiteDatabase db, int oldVersion, int newVersion)
-        {
-
-        }
-
-        // 数据库版本
-        @Override
-        public int version()
-        {
-            return 1;
-        }
+    private void room(PeopleDao dao)
+    {
+        long old_time = System.currentTimeMillis();
+        int id = dao.firstId();
+        System.out.println("Room-耗时:" + (System.currentTimeMillis() - old_time));
+        //System.out.println(id);
     }
 }

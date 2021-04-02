@@ -128,7 +128,7 @@ public class QueryProxy extends DaoProxy
                     if (cursor.moveToNext())
                         return parseObject(cursor, type);
                     else
-                        return null;
+                        return RoomLiteUtil.defaultValue(type);
                 } else if (returnCount == ReturnCount.ARRAY) // 返回数组
                 {
                     Object[] array = (Object[]) Array.newInstance(type, count);

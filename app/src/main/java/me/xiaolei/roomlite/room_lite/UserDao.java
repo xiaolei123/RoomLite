@@ -1,4 +1,4 @@
-package me.xiaolei.roomlite;
+package me.xiaolei.roomlite.room_lite;
 
 
 import java.util.List;
@@ -20,6 +20,9 @@ public interface UserDao
     // 查询总数
     @Query(what = "count(id)", entity = User.class)
     public int queryCount();
+
+    @Query(what = "id", entity = User.class, limit = "0,1")
+    public int firstId();
 
     // 查询所有的名字
     @Query(what = "name", entity = User.class)
