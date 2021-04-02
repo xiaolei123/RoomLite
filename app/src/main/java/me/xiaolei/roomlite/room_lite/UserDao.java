@@ -4,8 +4,10 @@ package me.xiaolei.roomlite.room_lite;
 import java.util.List;
 
 import me.xiaolei.myroom.library.anno.dao.Dao;
+import me.xiaolei.myroom.library.anno.dao.Delete;
 import me.xiaolei.myroom.library.anno.dao.Insert;
 import me.xiaolei.myroom.library.anno.dao.Query;
+import me.xiaolei.myroom.library.anno.dao.Update;
 
 @Dao
 public interface UserDao
@@ -19,6 +21,20 @@ public interface UserDao
 
     @Insert
     void addUser(List<User> list, User[] array, User single);
+    
+    @Delete
+    int delete(User user);
+
+    @Delete
+    int delete(User[] user);
+    
+    @Delete
+    int delete(List<User> list, User[] array, User single);
+    
+    
+    @Update
+    int update(User user);
+    
 
     // 查询所有
     @Query(entity = User.class)

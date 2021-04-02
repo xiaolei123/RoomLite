@@ -11,6 +11,15 @@ import me.xiaolei.myroom.library.anno.PrimaryKey;
 @Entity(name = "User")
 public class User
 {
+    public User()
+    {
+    }
+
+    public User(int id)
+    {
+        this.id = id;
+    }
+
     @Column
     @PrimaryKey(autoGenerate = true)
     public int id;

@@ -42,28 +42,25 @@ public class MainActivity extends AppCompatActivity
 
     private void roomLite(UserDao dao)
     {
-        List<User> list = new LinkedList<User>()
-        {
-            {
-                add(new User());
-                add(new User());
-                add(new User());
-                add(new User());
-            }
-        };
+        int index = 6;
+       User single = new User(index++);
+       List<User> list = new LinkedList<User>();
+       list.add(new User(index++));
+       list.add(new User(index++));
+       list.add(new User(index++));
+       list.add(new User(index++));
         User[] array = new User[]{
-                new User(),
-                new User(),
-                new User(),
-                new User(),
+                new User(index++),
+                new User(index++),
+                new User(index++),
+                new User(index++),
         };
-        User single = new User();
 
         long old_time = System.currentTimeMillis();
 
-        dao.addUser(list, array, single);
+        int count = dao.delete(list,array,single);
+        System.out.println(count);
         System.out.println("耗时：" + (System.currentTimeMillis() - old_time));
-        System.out.println("");
     }
 
     private void room(PeopleDao dao)
