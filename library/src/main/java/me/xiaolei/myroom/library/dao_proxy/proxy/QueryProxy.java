@@ -15,15 +15,6 @@ import java.util.List;
 import me.xiaolei.myroom.library.anno.dao.Query;
 import me.xiaolei.myroom.library.coverts.Convert;
 import me.xiaolei.myroom.library.coverts.Converts;
-import me.xiaolei.myroom.library.coverts.base.ToBooleanConvert;
-import me.xiaolei.myroom.library.coverts.base.ToByteArrayConvert;
-import me.xiaolei.myroom.library.coverts.base.ToByteConvert;
-import me.xiaolei.myroom.library.coverts.base.ToDoubleConvert;
-import me.xiaolei.myroom.library.coverts.base.ToFloatConvert;
-import me.xiaolei.myroom.library.coverts.base.ToIntegerConvert;
-import me.xiaolei.myroom.library.coverts.base.ToLongConvert;
-import me.xiaolei.myroom.library.coverts.base.ToShortConvert;
-import me.xiaolei.myroom.library.coverts.base.ToStringConvert;
 import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
 import me.xiaolei.myroom.library.sqlite.BaseDatabase;
 import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
@@ -215,38 +206,7 @@ public class QueryProxy extends DaoProxy
     {
         int columnIndex = cursor.getColumnIndex(columnName);
         Convert convert = Converts.getConvert(type);
-        // 用转换器的类型，去跟基本支持类型去比对
-        if (convert instanceof ToByteConvert)
-        {
-            return (byte) cursor.getInt(columnIndex);
-        } else if (convert instanceof ToLongConvert)
-        {
-            return (long) cursor.getLong(columnIndex);
-        } else if (convert instanceof ToFloatConvert)
-        {
-            return (float) cursor.getFloat(columnIndex);
-        } else if (convert instanceof ToDoubleConvert)
-        {
-            return (double) cursor.getDouble(columnIndex);
-        } else if (convert instanceof ToShortConvert)
-        {
-            return (short) cursor.getShort(columnIndex);
-        } else if (convert instanceof ToByteArrayConvert)
-        {
-            return (byte[]) cursor.getBlob(columnIndex);
-        } else if (convert instanceof ToStringConvert)
-        {
-            return (String) cursor.getString(columnIndex);
-        } else if (convert instanceof ToBooleanConvert)
-        {
-            return (boolean) ((int) cursor.getInt(columnIndex) != 0);
-        } else if (convert instanceof ToIntegerConvert)
-        {
-            return (int) cursor.getInt(columnIndex);
-        } else
-        {
-            return null;
-        }
+        return convert.cursorToJava(cursor,columnIndex);
     }
 
     /**

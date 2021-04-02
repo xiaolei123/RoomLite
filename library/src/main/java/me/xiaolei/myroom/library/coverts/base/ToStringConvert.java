@@ -1,6 +1,8 @@
 package me.xiaolei.myroom.library.coverts.base;
 
 
+import android.database.Cursor;
+
 import me.xiaolei.myroom.library.anno.Column;
 import me.xiaolei.myroom.library.coverts.Convert;
 
@@ -16,4 +18,10 @@ public abstract class ToStringConvert extends Convert
 
     @Override
     public abstract String convertToString(Object javaObj);
+
+    @Override
+    public Object cursorToJava(Cursor cursor, int columnIndex)
+    {
+        return (String) cursor.getString(columnIndex);
+    }
 }

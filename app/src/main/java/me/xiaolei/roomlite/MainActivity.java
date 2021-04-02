@@ -6,10 +6,13 @@ import androidx.room.Room;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import java.util.List;
+
 import me.xiaolei.myroom.library.RoomLite;
 import me.xiaolei.roomlite.room.PeopleDao;
 import me.xiaolei.roomlite.room.RoomDataBase;
 import me.xiaolei.roomlite.room_lite.LiteDataBase;
+import me.xiaolei.roomlite.room_lite.User;
 import me.xiaolei.roomlite.room_lite.UserDao;
 
 public class MainActivity extends AppCompatActivity
@@ -32,7 +35,7 @@ public class MainActivity extends AppCompatActivity
         text.setOnClickListener(v ->
         {
             roomLite(userDao);
-            room(peopleDao);
+            //room(peopleDao);
         });
     }
 
@@ -41,9 +44,9 @@ public class MainActivity extends AppCompatActivity
         System.out.println("---------");
         
         long old_time = System.currentTimeMillis();
-        int user = dao.firstId();
+        List<User> user = dao.queryAll();
         System.out.println("RoomLite-耗时:" + (System.currentTimeMillis() - old_time));
-        //System.out.println(user);
+        System.out.println(user);
     }
 
     private void room(PeopleDao dao)

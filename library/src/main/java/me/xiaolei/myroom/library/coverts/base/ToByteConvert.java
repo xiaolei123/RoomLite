@@ -1,6 +1,8 @@
 package me.xiaolei.myroom.library.coverts.base;
 
 
+import android.database.Cursor;
+
 import me.xiaolei.myroom.library.anno.Column;
 import me.xiaolei.myroom.library.coverts.Convert;
 
@@ -16,4 +18,10 @@ public abstract class ToByteConvert extends Convert
 
     @Override
     public abstract Byte convertToByte(Object javaObj);
+
+    @Override
+    public Object cursorToJava(Cursor cursor, int columnIndex)
+    {
+        return (byte) cursor.getInt(columnIndex);
+    }
 }

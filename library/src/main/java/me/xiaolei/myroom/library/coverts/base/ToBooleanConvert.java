@@ -1,6 +1,8 @@
 package me.xiaolei.myroom.library.coverts.base;
 
 
+import android.database.Cursor;
+
 import me.xiaolei.myroom.library.anno.Column;
 import me.xiaolei.myroom.library.coverts.Convert;
 
@@ -16,4 +18,11 @@ public abstract class ToBooleanConvert extends Convert
 
     @Override
     public abstract Boolean convertToBoolean(Object javaObj);
+
+    @Override
+    public Object cursorToJava(Cursor cursor, int columnIndex)
+    {
+        return (boolean) ((int) cursor.getInt(columnIndex) != 0);
+    }
+    
 }

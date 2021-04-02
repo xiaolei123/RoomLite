@@ -1,6 +1,8 @@
 package me.xiaolei.myroom.library.coverts;
 
 
+import android.database.Cursor;
+
 import me.xiaolei.myroom.library.anno.Column;
 import me.xiaolei.myroom.library.util.RoomLiteUtil;
 
@@ -37,6 +39,15 @@ public abstract class Convert
         this.javaType = javaType;
         this.sqlType = sqlType;
     }
+
+    /**
+     * 从Cursor获取数据,并转换成对应 javaType 类型的数据
+     */
+    public Object cursorToJava(Cursor cursor, int columnIndex)
+    {
+        return null;
+    }
+    
 
     /**
      * 判断传入的Java类型，是否是同一个类型，这里需要特殊处理父类，和接口类型
