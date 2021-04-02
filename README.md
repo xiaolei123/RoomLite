@@ -16,11 +16,11 @@ allprojects {
 
 ```gradle
 dependencies {
-	implementation 'com.gitee.xcode_xiao:RoomLite:+'
+	implementation 'com.github.xiaolei123:RoomLite:Tag'
 }
 ```
 
-![alt](https://www.jitpack.io/v/com.gitee.xcode_xiao/RoomLite.svg)
+![alt](https://www.jitpack.io/v/com.github.xiaolei123/RoomLite.svg)
 
 
 #### 使用说明

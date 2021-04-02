@@ -125,8 +125,10 @@ public class QueryProxy extends DaoProxy
                         if (count > 1)
                             throw new RuntimeException(method + " 返回类型:" + type + " 对应的查询结果行: " + count + " 不匹配");
                     }
-                    cursor.moveToNext();
-                    return parseObject(cursor, type);
+                    if (cursor.moveToNext())
+                        return parseObject(cursor, type);
+                    else
+                        return null;
                 } else if (returnCount == ReturnCount.ARRAY) // 返回数组
                 {
                     Object[] array = (Object[]) Array.newInstance(type, count);
