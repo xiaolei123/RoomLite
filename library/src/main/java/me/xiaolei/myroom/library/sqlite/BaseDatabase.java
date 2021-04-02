@@ -9,11 +9,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 
+import me.xiaolei.myroom.library.sqlite.calls.LiteRunnable;
 import me.xiaolei.myroom.library.sqlite.calls.OnResult;
-import me.xiaolei.myroom.library.sqlite.calls.PostRunnable;
-import me.xiaolei.myroom.library.sqlite.calls.ResultRunnable;
 
 /**
  * 对数据库的一层包装
@@ -27,7 +25,11 @@ public class BaseDatabase implements Closeable
     {
         String dbPath = new File(liteDatabase.getDatabaseDir(), liteDatabase.getDatabaseName()).getAbsolutePath();
         database = SQLiteDatabase.openOrCreateDatabase(dbPath, null);
-        this.post((database) -> this.onInit(liteDatabase, database));
+        this.post((database) ->
+        {
+            this.onInit(liteDatabase, database);
+            return null;
+        });
     }
 
     /**
@@ -70,30 +72,15 @@ public class BaseDatabase implements Closeable
     }
 
     /**
-     * 阻塞执行，不关心结果
+     * 异步执行，不需要结果
      */
-    public void await(PostRunnable runnable)
+    public <T> void post(LiteRunnable<T> runnable)
     {
-        Callable<Void> callable = () ->
-        {
-            runnable.run(database);
-            return null;
-        };
-        FutureTask<Void> task = new FutureTask<>(callable);
-        executor.submit(task);
-        try
-        {
-            task.get(/*30, TimeUnit.SECONDS*/);
-        } catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+        Runnable callable = () -> runnable.run(database);
+        executor.submit(callable);
     }
 
-    /**
-     * 阻塞执行，还关心结果
-     */
-    public <T> T await(ResultRunnable<T> runnable)
+    public <T> T postWait(LiteRunnable<T> runnable)
     {
         Callable<T> callable = () -> runnable.run(database);
         FutureTask<T> task = new FutureTask<T>(callable);
@@ -108,18 +95,9 @@ public class BaseDatabase implements Closeable
     }
 
     /**
-     * 异步执行，不需要结果
-     */
-    public void post(PostRunnable runnable)
-    {
-        Runnable callable = () -> runnable.run(database);
-        executor.submit(callable);
-    }
-
-    /**
      * 异步执行，还需要结果回调
      */
-    public <T> void post(ResultRunnable<T> runnable, OnResult<T> result)
+    public <T> void postCallBack(LiteRunnable<T> runnable, OnResult<T> result)
     {
         Runnable callable = () ->
         {

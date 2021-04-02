@@ -12,6 +12,7 @@ import java.util.Map;
 import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
 import me.xiaolei.myroom.library.sqlite.BaseDatabase;
 import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
+import me.xiaolei.myroom.library.sqlite.calls.LiteRunnable;
 import me.xiaolei.myroom.library.util.RoomLiteUtil;
 
 public class DeleteProxy extends DaoProxy
@@ -91,48 +92,34 @@ public class DeleteProxy extends DaoProxy
                 }
                 whereArgss.add(values);
             }
-
+            LiteRunnable<Integer> runnable = (database) ->
+            {
+                database.beginTransaction();
+                int count = 0;
+                try
+                {
+                    for (String[] whereArgs : whereArgss)
+                    {
+                        count += database.delete(tableName, whereClause.toString(), whereArgs);
+                    }
+                    database.setTransactionSuccessful();
+                } finally
+                {
+                    database.endTransaction();
+                }
+                return count;
+            };
             // 如果返回值是 int 则返回改变行
             if (returnType == int.class)
             {
-                return database.await((database) ->
-                {
-                    database.beginTransaction();
-                    int count = 0;
-                    try
-                    {
-                        for (String[] whereArgs : whereArgss)
-                        {
-                            count += database.delete(tableName, whereClause.toString(), whereArgs);
-                        }
-                        database.setTransactionSuccessful();
-                    } finally
-                    {
-                        database.endTransaction();
-                    }
-                    return count;
-                });
+                changeCount += database.postWait(runnable);
             } else
             {
-                database.post((database) ->
-                {
-                    database.beginTransaction();
-                    try
-                    {
-                        for (String[] values : whereArgss)
-                        {
-                            database.delete(tableName, whereClause.toString(), values);
-                        }
-                        database.setTransactionSuccessful();
-                    } finally
-                    {
-                        database.endTransaction();
-                    }
-                });
+                database.post(runnable);
             }
         }
 
-        return null;
+        return changeCount;
     }
 
     /**

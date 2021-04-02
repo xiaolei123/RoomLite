@@ -18,6 +18,7 @@ import me.xiaolei.myroom.library.coverts.Converts;
 import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
 import me.xiaolei.myroom.library.sqlite.BaseDatabase;
 import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
+import me.xiaolei.myroom.library.sqlite.calls.LiteRunnable;
 import me.xiaolei.myroom.library.util.RoomLiteUtil;
 
 public class QueryProxy extends DaoProxy
@@ -99,7 +100,8 @@ public class QueryProxy extends DaoProxy
         if (!Converts.hasBaseConvert(type) && type != tableKlass)
             throw new RuntimeException(method + " 返回的类型" + type + "，不在允许范围内");
         Log.e("RoomLite", querySQLBuilder + "," + Arrays.toString(whereArgs));
-        return database.await(database ->
+        
+        LiteRunnable<Object> runnable = (database) ->
         {
             try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
             {
@@ -141,7 +143,8 @@ public class QueryProxy extends DaoProxy
             {
                 throw new RuntimeException(e);
             }
-        });
+        };
+        return database.postWait(runnable);
     }
 
     /**
@@ -206,7 +209,7 @@ public class QueryProxy extends DaoProxy
     {
         int columnIndex = cursor.getColumnIndex(columnName);
         Convert convert = Converts.getConvert(type);
-        return convert.cursorToJava(cursor,columnIndex);
+        return convert.cursorToJava(cursor, columnIndex);
     }
 
     /**

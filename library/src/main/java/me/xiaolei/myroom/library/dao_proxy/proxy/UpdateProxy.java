@@ -13,6 +13,7 @@ import java.util.Map;
 import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
 import me.xiaolei.myroom.library.sqlite.BaseDatabase;
 import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
+import me.xiaolei.myroom.library.sqlite.calls.LiteRunnable;
 import me.xiaolei.myroom.library.util.RoomLiteUtil;
 
 public class UpdateProxy extends DaoProxy
@@ -94,51 +95,35 @@ public class UpdateProxy extends DaoProxy
                 contentValues.add(RoomLiteUtil.convertContentValue(klass, updateObj));
             }
 
+            LiteRunnable<Integer> runnable = (database) ->
+            {
+                int count = 0;
+                database.beginTransaction();
+                try
+                {
+                    for (int i = 0; i < whereArgss.size(); i++)
+                    {
+                        String[] whereArgs = whereArgss.get(i);
+                        ContentValues values = contentValues.get(i);
+                        count += database.update(tableName, values, whereClause.toString(), whereArgs);
+                    }
+                    database.setTransactionSuccessful();
+                } finally
+                {
+                    database.endTransaction();
+                }
+                return count;
+            };
+
             if (returnType == int.class)
             {
-                return database.await((database) ->
-                {
-                    int count = 0;
-                    database.beginTransaction();
-                    try
-                    {
-                        for (int i = 0; i < whereArgss.size(); i++)
-                        {
-                            String[] whereArgs = whereArgss.get(i);
-                            ContentValues values = contentValues.get(i);
-                            count += database.update(tableName, values, whereClause.toString(), whereArgs);
-                        }
-                        database.setTransactionSuccessful();
-                    } finally
-                    {
-                        database.endTransaction();
-                    }
-                    return count;
-                });
+                changeCount += database.postWait(runnable);
             } else
             {
-                database.post((database) ->
-                {
-                    database.beginTransaction();
-                    try
-                    {
-                        for (int i = 0; i < whereArgss.size(); i++)
-                        {
-                            String[] whereArgs = whereArgss.get(i);
-                            ContentValues values = contentValues.get(i);
-                            database.update(tableName, values, whereClause.toString(), whereArgs);
-                        }
-                        database.setTransactionSuccessful();
-                    } finally
-                    {
-                        database.endTransaction();
-                    }
-                });
+                database.post(runnable);
             }
-
-
         }
-        return null;
+        return changeCount;
     }
 
 

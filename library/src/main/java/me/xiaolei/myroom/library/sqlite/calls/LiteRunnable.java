@@ -2,7 +2,7 @@ package me.xiaolei.myroom.library.sqlite.calls;
 
 import android.database.sqlite.SQLiteDatabase;
 
-public interface PostRunnable
+public interface LiteRunnable<T>
 {
-    public void run(SQLiteDatabase database);
+    T run(SQLiteDatabase database);
 }
