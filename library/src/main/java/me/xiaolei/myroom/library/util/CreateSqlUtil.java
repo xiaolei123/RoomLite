@@ -8,6 +8,8 @@ import java.util.Map;
 
 import me.xiaolei.myroom.library.anno.Column;
 import me.xiaolei.myroom.library.anno.PrimaryKey;
+import me.xiaolei.myroom.library.coverts.Convert;
+import me.xiaolei.myroom.library.coverts.Converts;
 
 /**
  * 创建表要用到的
@@ -69,7 +71,7 @@ public class CreateSqlUtil
         {
             String columnName = RoomLiteUtil.getColumnName(field);
             Column.SQLType sqlType = RoomLiteUtil.getColumnSQLType(field);
-            String sqlTag = getColumnTag(field);
+            String sqlTag = getColumnTag(field, sqlType);
             columns.put(columnName, sqlType + sqlTag);
         }
         return columns;
@@ -79,7 +81,7 @@ public class CreateSqlUtil
     /**
      * 获取其他修饰符
      */
-    private String getColumnTag(Field field)
+    private String getColumnTag(Field field, Column.SQLType sqlType)
     {
         StringBuilder builder = new StringBuilder();
         // ---------------------@Column-----------------------------
@@ -92,8 +94,7 @@ public class CreateSqlUtil
             builder.append(" PRIMARY KEY");
             if (primaryKey.autoGenerate())
             {
-                Class<?> fieldType = field.getType();
-                if (fieldType == int.class || fieldType == Integer.class || fieldType == long.class || fieldType == Long.class)
+                if (sqlType == Column.SQLType.INTEGER)
                 {
                     builder.append(" AUTOINCREMENT");
                 }

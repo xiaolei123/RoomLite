@@ -40,19 +40,6 @@ public abstract class Convert
         this.sqlType = sqlType;
     }
 
-
-    /**
-     * 判断传入的Java类型，是否是同一个类型，这里需要特殊处理父类，和接口类型
-     *
-     * @param type
-     * @return
-     */
-    public boolean isSameType(Class<?> type)
-    {
-        Class<?> javaType = this.getJavaType();
-        return type == javaType;
-    }
-
     /**
      * 从数据库的Cursor获取数据,并转换成对应 javaType 类型的数据
      */

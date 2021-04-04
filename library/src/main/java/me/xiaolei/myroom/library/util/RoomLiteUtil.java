@@ -187,6 +187,8 @@ public class RoomLiteUtil
             Class<?> javaType = field.getType();
             // 根据字段类型，获取转换器
             Convert convert = Converts.getConvert(javaType);
+            if (convert == null)
+                throw new RuntimeException(field + "所对应的数据库类型转换器未定义。");
             // 判断字段的类型是不是数字
             if (convert.getSqlType() == Column.SQLType.INTEGER)
             {

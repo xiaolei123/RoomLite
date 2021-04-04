@@ -100,7 +100,7 @@ public class QueryProxy extends DaoProxy
         if (!Converts.hasConvert(type) && type != tableKlass)
             throw new RuntimeException(method + " 返回的类型" + type + "，不在允许范围内");
         Log.e("RoomLite", querySQLBuilder + "," + Arrays.toString(whereArgs));
-        
+
         LiteRunnable<Object> runnable = (database) ->
         {
             try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
@@ -209,6 +209,8 @@ public class QueryProxy extends DaoProxy
     {
         int columnIndex = cursor.getColumnIndex(columnName);
         Convert convert = Converts.getConvert(type);
+        if (convert == null)
+            throw new RuntimeException(type.getCanonicalName() + "所对应的数据库类型转换器未定义。");
         return convert.cursorToJavaObject(cursor, columnIndex);
     }
 

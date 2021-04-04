@@ -46,12 +46,8 @@ public class Converts
      */
     public static boolean hasConvert(Class<?> javaType)
     {
-        for (Convert convert : converts)
-        {
-            if (convert.isSameType(javaType))
-                return true;
-        }
-        return false;
+        Convert convert = getConvert(javaType);
+        return convert != null;
     }
 
 
@@ -64,10 +60,10 @@ public class Converts
     {
         for (Convert convert : converts)
         {
-            if (convert.isSameType(javaType))
+            if (convert.getJavaType() == javaType)
                 return convert;
         }
-        throw new RuntimeException(javaType.getCanonicalName() + "所对应的数据库类型转换器未定义。");
+        return null;
     }
 
     /**
@@ -77,10 +73,10 @@ public class Converts
      */
     public static Column.SQLType convertSqlType(Class<?> javaType)
     {
-        for (Convert convert : converts)
+        Convert convert = getConvert(javaType);
+        if (convert != null)
         {
-            if (convert.isSameType(javaType))
-                return convert.getSqlType();
+            return convert.getSqlType();
         }
         throw new RuntimeException(javaType.getCanonicalName() + "所对应的数据库类型转换器未定义。");
     }
