@@ -86,6 +86,9 @@ public class InsertProxy extends DaoProxy
                         count++;
                     }
                     database.setTransactionSuccessful();
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
                 } finally
                 {
                     database.endTransaction();

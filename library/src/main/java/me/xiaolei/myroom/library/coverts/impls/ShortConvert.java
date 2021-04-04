@@ -14,4 +14,15 @@ public class ShortConvert extends ToShortConvert
     {
         return (short) javaObj;
     }
+
+    /**
+     * 从数据库的Cursor获取数据,并转换成对应 javaType 类型的数据
+     *
+     * @param value
+     */
+    @Override
+    public Object cursorToJavaObject(short value)
+    {
+        return value;
+    }
 }

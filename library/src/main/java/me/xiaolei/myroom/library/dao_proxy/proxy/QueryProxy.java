@@ -97,7 +97,7 @@ public class QueryProxy extends DaoProxy
             returnCount = ReturnCount.SINGLE;
         }
         // 判断获取到的type，是不是被支持
-        if (!Converts.hasBaseConvert(type) && type != tableKlass)
+        if (!Converts.hasConvert(type) && type != tableKlass)
             throw new RuntimeException(method + " 返回的类型" + type + "，不在允许范围内");
         Log.e("RoomLite", querySQLBuilder + "," + Arrays.toString(whereArgs));
         
@@ -109,7 +109,7 @@ public class QueryProxy extends DaoProxy
                 int count = cursor.getCount();
                 if (returnCount == ReturnCount.SINGLE) // 返回单个对象
                 {
-                    if (Converts.hasBaseConvert(type)) // 基本类型的单个对象
+                    if (Converts.hasConvert(type)) // 基本类型的单个对象
                     {
                         if (count > 1 || columnCount > 1)
                             throw new RuntimeException(method + " 返回类型:" + type + " 对应的查询结果列:" + columnCount + " 行:" + count + " 不匹配");
@@ -163,7 +163,7 @@ public class QueryProxy extends DaoProxy
     private Object parseObject(Cursor cursor, Class<?> type)
     {
         String[] columnNames = cursor.getColumnNames();
-        if (Converts.hasBaseConvert(type)) // 解析基本类型
+        if (Converts.hasConvert(type)) // 解析基本类型
         {
             return parseObjectByName(cursor, columnNames[0], type);
         } else // 解析自定义类型
@@ -209,7 +209,7 @@ public class QueryProxy extends DaoProxy
     {
         int columnIndex = cursor.getColumnIndex(columnName);
         Convert convert = Converts.getConvert(type);
-        return convert.cursorToJava(cursor, columnIndex);
+        return convert.cursorToJavaObject(cursor, columnIndex);
     }
 
     /**

@@ -17,7 +17,6 @@ import me.xiaolei.myroom.library.coverts.impls.*;
 public class Converts
 {
     private static final LinkedBlockingQueue<Convert> converts = new LinkedBlockingQueue<>();
-    private static final LinkedBlockingQueue<Convert> baseConverts = new LinkedBlockingQueue<>();
 
     static
     {
@@ -40,30 +39,21 @@ public class Converts
         converts.offer(new LongConvert());
         converts.offer(new ShortBoxConvert());
         converts.offer(new ShortConvert());
-
-        baseConverts.addAll(converts);
     }
 
     /**
-     * 检查传入的类型，是不是基本的支持的类型
+     * 检查传入的类型，是不是支持的类型
      */
-    public static boolean hasBaseConvert(Class<?> javaType)
+    public static boolean hasConvert(Class<?> javaType)
     {
-        return getBaseConvert(javaType) != null;
-    }
-
-    /**
-     * 检查传入的类型，获取基本的支持的类型
-     */
-    public static Convert getBaseConvert(Class<?> javaType)
-    {
-        for (Convert convert : baseConverts)
+        for (Convert convert : converts)
         {
             if (convert.isSameType(javaType))
-                return convert;
+                return true;
         }
-        return null;
+        return false;
     }
+
 
     /**
      * 根据Java的类型，寻找出对应的转换器
@@ -98,7 +88,7 @@ public class Converts
     /**
      * 添加自定义类型转换器
      */
-    public static void addConvert(Class<Convert> convertKlass)
+    public static void addConvert(Class<? extends Convert> convertKlass)
     {
         try
         {

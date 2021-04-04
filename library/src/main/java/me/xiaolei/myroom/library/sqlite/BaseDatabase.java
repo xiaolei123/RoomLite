@@ -43,6 +43,9 @@ public class BaseDatabase implements Closeable
         {
             liteDatabase.onOpen(database);
             database.setTransactionSuccessful();
+        } catch (Exception e)
+        {
+            e.printStackTrace();
         } finally
         {
             database.endTransaction();
@@ -64,6 +67,9 @@ public class BaseDatabase implements Closeable
                 }
                 database.setVersion(mNewVersion);
                 database.setTransactionSuccessful();
+            } catch (Exception e)
+            {
+                throw e;
             } finally
             {
                 database.endTransaction();

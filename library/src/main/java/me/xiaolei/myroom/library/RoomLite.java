@@ -33,7 +33,7 @@ public class RoomLite
      *
      * @param convertKlass 转换器
      */
-    public static void addConvert(Class<Convert> convertKlass)
+    public static void addConvert(Class<? extends Convert> convertKlass)
     {
         Converts.addConvert(convertKlass);
     }

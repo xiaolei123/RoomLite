@@ -2,7 +2,7 @@ package me.xiaolei.myroom.library.coverts.impls;
 
 import me.xiaolei.myroom.library.coverts.base.ToByteArrayConvert;
 
-public class ByteArrayConvert extends ToByteArrayConvert
+public class ByteArrayConvert extends ToByteArrayConvert<byte[]>
 {
     public ByteArrayConvert()
     {
@@ -10,8 +10,19 @@ public class ByteArrayConvert extends ToByteArrayConvert
     }
 
     @Override
-    public byte[] convertToByteArray(Object javaObj)
+    public byte[] convertToByteArray(byte[] javaObj)
     {
-        return (byte[]) javaObj;
+        return javaObj;
+    }
+
+    /**
+     * 从数据库的Cursor获取数据,并转换成对应 javaType 类型的数据
+     *
+     * @param value
+     */
+    @Override
+    public byte[] cursorToJavaObject(byte[] value)
+    {
+        return value;
     }
 }

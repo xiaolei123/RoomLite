@@ -103,6 +103,9 @@ public class DeleteProxy extends DaoProxy
                         count += database.delete(tableName, whereClause.toString(), whereArgs);
                     }
                     database.setTransactionSuccessful();
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
                 } finally
                 {
                     database.endTransaction();

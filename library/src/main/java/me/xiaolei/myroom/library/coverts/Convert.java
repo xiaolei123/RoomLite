@@ -40,14 +40,6 @@ public abstract class Convert
         this.sqlType = sqlType;
     }
 
-    /**
-     * 从Cursor获取数据,并转换成对应 javaType 类型的数据
-     */
-    public Object cursorToJava(Cursor cursor, int columnIndex)
-    {
-        return null;
-    }
-
 
     /**
      * 判断传入的Java类型，是否是同一个类型，这里需要特殊处理父类，和接口类型
@@ -61,48 +53,16 @@ public abstract class Convert
         return type == javaType;
     }
 
-    public Byte convertToByte(Object javaObj)
-    {
-        return null;
-    }
+    /**
+     * 从数据库的Cursor获取数据,并转换成对应 javaType 类型的数据
+     */
+    public abstract Object cursorToJavaObject(Cursor cursor, int columnIndex);
 
-    public Long convertToLong(Object javaObj)
-    {
-        return null;
-    }
-
-    public Float convertToFloat(Object javaObj)
-    {
-        return null;
-    }
-
-    public Double convertToDouble(Object javaObj)
-    {
-        return null;
-    }
-
-    public Short convertToShort(Object javaObj)
-    {
-        return null;
-    }
-
-    public byte[] convertToByteArray(Object javaObj)
-    {
-        return null;
-    }
-
-    public String convertToString(Object javaObj)
-    {
-        return null;
-    }
-
-    public Boolean convertToBoolean(Object javaObj)
-    {
-        return null;
-    }
-
-    public Integer convertToInteger(Object javaObj)
-    {
-        return null;
-    }
+    /**
+     * 从Java对象转换成数据库支持的对象
+     *
+     * @param javaObj 要转换的Java对象
+     * @return 数据库支持的对象
+     */
+    public abstract Object convertToDataBaseObject(Object javaObj);
 }

@@ -2,7 +2,7 @@ package me.xiaolei.myroom.library.coverts.impls;
 
 import me.xiaolei.myroom.library.coverts.base.ToIntegerConvert;
 
-public class CharBoxConvert extends ToIntegerConvert
+public class CharBoxConvert extends ToIntegerConvert<Character>
 {
     public CharBoxConvert()
     {
@@ -10,8 +10,19 @@ public class CharBoxConvert extends ToIntegerConvert
     }
 
     @Override
-    public Integer convertToInteger(Object javaObj)
+    public Integer convertToInteger(Character javaObj)
     {
-        return (int) (Character) javaObj;
+        return (int) javaObj;
+    }
+
+    /**
+     * 从数据库的Cursor获取数据,并转换成对应 javaType 类型的数据
+     *
+     * @param value
+     */
+    @Override
+    public Character cursorToJavaObject(int value)
+    {
+        return (char) value;
     }
 }

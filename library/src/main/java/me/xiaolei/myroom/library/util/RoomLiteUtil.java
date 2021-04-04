@@ -156,7 +156,7 @@ public class RoomLiteUtil
     {
         try
         {
-            return field.get(obj) + "";
+            return field.get(obj);
         } catch (IllegalAccessException e)
         {
             e.printStackTrace();
@@ -194,34 +194,35 @@ public class RoomLiteUtil
                 if (RoomLiteUtil.isPrimaryKeyAndAutoGenerate(field))
                     continue;
             }
+            Object result = convert.convertToDataBaseObject(value);
             // 用转换器的类型，去跟基本支持类型去比对
             if (convert instanceof ToByteConvert)
             {
-                values.put(columnName, convert.convertToByte(value));
+                values.put(columnName, result == null ? null : (byte) result);
             } else if (convert instanceof ToLongConvert)
             {
-                values.put(columnName, convert.convertToLong(value));
+                values.put(columnName, result == null ? null : (long) result);
             } else if (convert instanceof ToFloatConvert)
             {
-                values.put(columnName, convert.convertToFloat(value));
+                values.put(columnName, result == null ? null : (float) result);
             } else if (convert instanceof ToDoubleConvert)
             {
-                values.put(columnName, convert.convertToDouble(value));
+                values.put(columnName, result == null ? null : (double) result);
             } else if (convert instanceof ToShortConvert)
             {
-                values.put(columnName, convert.convertToShort(value));
+                values.put(columnName, result == null ? null : (short) result);
             } else if (convert instanceof ToByteArrayConvert)
             {
-                values.put(columnName, convert.convertToByteArray(value));
+                values.put(columnName, result == null ? null : (byte[]) result);
             } else if (convert instanceof ToStringConvert)
             {
-                values.put(columnName, convert.convertToString(value));
+                values.put(columnName, result == null ? null : (String) result);
             } else if (convert instanceof ToBooleanConvert)
             {
-                values.put(columnName, convert.convertToBoolean(value));
+                values.put(columnName, result == null ? null : (boolean) result);
             } else if (convert instanceof ToIntegerConvert)
             {
-                values.put(columnName, convert.convertToInteger(value));
+                values.put(columnName, result == null ? null : (int) result);
             }
         }
         return values;

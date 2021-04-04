@@ -2,6 +2,7 @@ package me.xiaolei.myroom.library.util;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +63,7 @@ public class CreateSqlUtil
      */
     private Map<String, String> getColumns(Class<?> klass)
     {
-        Map<String, String> columns = new HashMap<>();
+        Map<String, String> columns = new LinkedHashMap<>();
         List<Field> fields = RoomLiteUtil.getFields(klass);
         for (Field field : fields)
         {

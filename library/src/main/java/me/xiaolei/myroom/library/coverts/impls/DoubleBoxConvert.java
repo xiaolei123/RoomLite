@@ -2,7 +2,7 @@ package me.xiaolei.myroom.library.coverts.impls;
 
 import me.xiaolei.myroom.library.coverts.base.ToDoubleConvert;
 
-public class DoubleBoxConvert extends ToDoubleConvert
+public class DoubleBoxConvert extends ToDoubleConvert<Double>
 {
     public DoubleBoxConvert()
     {
@@ -10,8 +10,19 @@ public class DoubleBoxConvert extends ToDoubleConvert
     }
 
     @Override
-    public Double convertToDouble(Object javaObj)
+    public Double convertToDouble(Double javaObj)
     {
-        return (Double) javaObj;
+        return javaObj;
+    }
+
+    /**
+     * 从数据库的Cursor获取数据,并转换成对应 javaType 类型的数据
+     *
+     * @param value
+     */
+    @Override
+    public Double cursorToJavaObject(double value)
+    {
+        return value;
     }
 }

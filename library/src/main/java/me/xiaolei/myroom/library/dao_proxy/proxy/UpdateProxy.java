@@ -108,6 +108,9 @@ public class UpdateProxy extends DaoProxy
                         count += database.update(tableName, values, whereClause.toString(), whereArgs);
                     }
                     database.setTransactionSuccessful();
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
                 } finally
                 {
                     database.endTransaction();

@@ -14,4 +14,10 @@ public class BooleanConvert extends ToBooleanConvert
     {
         return (boolean) javaObj;
     }
+
+    @Override
+    public Object cursorToJavaObject(boolean value)
+    {
+        return value;
+    }
 }
