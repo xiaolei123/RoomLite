@@ -32,7 +32,7 @@ public abstract class ToBooleanConvert<T> extends Convert
     @Override
     public Object cursorToJavaObject(Cursor cursor, int columnIndex)
     {
-        return this.cursorToJavaObject((boolean) ((int) cursor.getInt(columnIndex) != 0));
+        return this.cursorToJavaObject(cursor.getInt(columnIndex) != 0);
     }
 
     /**

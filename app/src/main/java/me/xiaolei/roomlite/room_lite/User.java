@@ -31,6 +31,6 @@ public class User
     public long x_long;
     public boolean x_bool;
     public char x_char;
-    public byte[] x_byte_array;
+    public Byte[] x_byte_array;
     public Date date;
 }

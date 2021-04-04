@@ -26,7 +26,7 @@ public abstract class ToDoubleConvert<T> extends Convert
     @Override
     public Object cursorToJavaObject(Cursor cursor, int columnIndex)
     {
-        return this.cursorToJavaObject((double) cursor.getDouble(columnIndex));
+        return this.cursorToJavaObject(cursor.getDouble(columnIndex));
     }
 
     /**

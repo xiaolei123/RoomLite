@@ -6,6 +6,7 @@ import androidx.room.Room;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class MainActivity extends AppCompatActivity
 
         TextView text = findViewById(R.id.text);
 
-        // RoomLite.addConvert(DateConvert.class);
+        RoomLite.addConvert(DateConvert.class);
 
         LiteDataBase dataBase = RoomLite.build(LiteDataBase.class);
         UserDao userDao = dataBase.getDao(UserDao.class);
@@ -47,8 +48,8 @@ public class MainActivity extends AppCompatActivity
     private void roomLite(UserDao dao)
     {
         long old_time = System.currentTimeMillis();
-        User user = dao.query();
-        System.out.println(user);
+        Date date = dao.getFirst();
+        System.out.println(date);
         System.out.println("耗时：" + (System.currentTimeMillis() - old_time));
     }
 

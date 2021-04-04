@@ -29,7 +29,7 @@ public abstract class ToByteArrayConvert<T> extends Convert
     @Override
     public Object cursorToJavaObject(Cursor cursor, int columnIndex)
     {
-        return this.cursorToJavaObject((byte[]) cursor.getBlob(columnIndex));
+        return this.cursorToJavaObject(cursor.getBlob(columnIndex));
     }
 
     /**

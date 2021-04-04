@@ -26,7 +26,7 @@ public abstract class ToShortConvert<T> extends Convert
     @Override
     public Object cursorToJavaObject(Cursor cursor, int columnIndex)
     {
-        return this.cursorToJavaObject((short) cursor.getShort(columnIndex));
+        return this.cursorToJavaObject(cursor.getShort(columnIndex));
     }
 
     /**

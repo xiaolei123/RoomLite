@@ -26,7 +26,7 @@ public abstract class ToStringConvert<T> extends Convert
     @Override
     public Object cursorToJavaObject(Cursor cursor, int columnIndex)
     {
-        return this.cursorToJavaObject((String) cursor.getString(columnIndex));
+        return this.cursorToJavaObject(cursor.getString(columnIndex));
     }
 
     /**

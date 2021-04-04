@@ -26,7 +26,8 @@ public abstract class ToLongConvert<T> extends Convert
     @Override
     public Object cursorToJavaObject(Cursor cursor, int columnIndex)
     {
-        return this.cursorToJavaObject((long) cursor.getLong(columnIndex));
+        long value = cursor.getLong(columnIndex);
+        return this.cursorToJavaObject(value);
     }
 
     /**

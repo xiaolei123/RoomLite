@@ -26,7 +26,7 @@ public abstract class ToFloatConvert<T> extends Convert
     @Override
     public Object cursorToJavaObject(Cursor cursor, int columnIndex)
     {
-        return this.cursorToJavaObject((float) cursor.getFloat(columnIndex));
+        return this.cursorToJavaObject(cursor.getFloat(columnIndex));
     }
 
     /**

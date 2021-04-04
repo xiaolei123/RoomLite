@@ -1,6 +1,7 @@
 package me.xiaolei.roomlite.room_lite;
 
 
+import java.util.Date;
 import java.util.List;
 
 import me.xiaolei.myroom.library.anno.dao.Dao;
@@ -21,20 +22,23 @@ public interface UserDao
 
     @Insert
     void addUser(List<User> list, User[] array, User single);
-    
+
     @Delete
     int delete(User user);
 
     @Delete
     int delete(User[] user);
-    
+
     @Delete
     int delete(List<User> list, User[] array, User single);
-    
-    
+
+
     @Update
     int update(User user);
-    
+
+
+    @Query(what = "date", entity = User.class, limit = "0,1")
+    public Date getFirst();
 
     // 查询所有
     @Query(entity = User.class)

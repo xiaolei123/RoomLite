@@ -26,7 +26,7 @@ public abstract class ToIntegerConvert<T> extends Convert
     @Override
     public Object cursorToJavaObject(Cursor cursor, int columnIndex)
     {
-        return this.cursorToJavaObject((int) cursor.getInt(columnIndex));
+        return this.cursorToJavaObject(cursor.getInt(columnIndex));
     }
 
     /**
