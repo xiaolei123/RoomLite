@@ -1,17 +1,16 @@
 package me.xiaolei.myroom.library.dao_proxy.proxy;
 
 import android.database.Cursor;
-import android.util.Log;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
+import me.xiaolei.myroom.library.adapters.Adapters;
+import me.xiaolei.myroom.library.adapters.ContainerAdapter;
 import me.xiaolei.myroom.library.anno.dao.Query;
 import me.xiaolei.myroom.library.coverts.Convert;
 import me.xiaolei.myroom.library.coverts.Converts;
@@ -19,6 +18,7 @@ import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
 import me.xiaolei.myroom.library.sqlite.BaseDatabase;
 import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
 import me.xiaolei.myroom.library.sqlite.calls.LiteRunnable;
+import me.xiaolei.myroom.library.util.QueryUtil;
 import me.xiaolei.myroom.library.util.RoomLiteUtil;
 
 public class QueryProxy extends DaoProxy
@@ -79,154 +79,85 @@ public class QueryProxy extends DaoProxy
         {
             whereArgs = null;
         }
-        // 返回数据的类型
-        ReturnCount returnCount;
-        // 获取需要解析的类型
-        Class<?> type;
-        if (returnType == List.class) // 如果是List 则获取List<>的泛型类型
+        // 首先检查，是不是基本类型，或者是用Convert添加的支持类型，再或者是当前查询的表的类型
+        Convert convert = Converts.getConvert(returnType);
+        if (convert != null || returnType == tableKlass)
         {
-            type = this.getListGenericType(method);
-            returnCount = ReturnCount.LIST;
-        } else if (returnType.isArray()) // 如果是数组，则获取数组成员的类型
-        {
-            type = returnType.getComponentType();
-            returnCount = ReturnCount.ARRAY;
-        } else // 则直接就是返回类型
-        {
-            type = returnType;
-            returnCount = ReturnCount.SINGLE;
-        }
-        // 判断获取到的type，是不是被支持
-        if (!Converts.hasConvert(type) && type != tableKlass)
-            throw new RuntimeException(method + " 返回的类型" + type + "，不在允许范围内");
-        Log.e("RoomLite", querySQLBuilder + "," + Arrays.toString(whereArgs));
-
-        LiteRunnable<Object> runnable = (database) ->
-        {
-            try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
+            LiteRunnable<Object> singleRunnable = database ->
             {
-                int columnCount = cursor.getColumnCount();
-                int count = cursor.getCount();
-                if (returnCount == ReturnCount.SINGLE) // 返回单个对象
+                try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
                 {
-                    if (Converts.hasConvert(type)) // 基本类型的单个对象
-                    {
-                        if (count > 1 || columnCount > 1)
-                            throw new RuntimeException(method + " 返回类型:" + type + " 对应的查询结果列:" + columnCount + " 行:" + count + " 不匹配");
-                    } else // 表的类型的单个对象
-                    {
-                        if (count > 1)
-                            throw new RuntimeException(method + " 返回类型:" + type + " 对应的查询结果行: " + count + " 不匹配");
-                    }
+                    if (!checkSupportSingle(cursor, returnType))
+                        throw new RuntimeException(returnType + " 返回类型的参数不支持");
                     if (cursor.moveToNext())
-                        return parseObject(cursor, type);
+                        return QueryUtil.parseObject(cursor, returnType);
                     else
-                        return RoomLiteUtil.defaultValue(type);
-                } else if (returnCount == ReturnCount.ARRAY) // 返回数组
+                        return RoomLiteUtil.defaultValue(returnType);
+                } catch (Exception e)
                 {
-                    Object[] array = (Object[]) Array.newInstance(type, count);
+                    throw new RuntimeException(e);
+                }
+            };
+            return database.postWait(singleRunnable);
+        } else if (returnType.isArray()) // 是数组
+        {
+            Class<?> comType = returnType.getComponentType();
+            Convert comConvert = Converts.getConvert(comType);
+            if (comConvert == null && comType != tableKlass)
+                throw new RuntimeException("数组类型:" + comType + " 不受支持");
+            LiteRunnable<Object> arrayRunnable = database ->
+            {
+                try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
+                {
+                    Object[] array = (Object[]) Array.newInstance(comType, cursor.getCount());
                     while (cursor.moveToNext())
                     {
-                        array[cursor.getPosition()] = parseObject(cursor, type);
+                        array[cursor.getPosition()] = QueryUtil.parseObject(cursor, comType);
                     }
                     return array;
-                } else// 返回List
+                } catch (Exception e)
                 {
-                    List<Object> list = new LinkedList<>();
-                    while (cursor.moveToNext())
-                    {
-                        list.add(parseObject(cursor, type));
-                    }
-                    return list;
+                    throw new RuntimeException(e);
                 }
-            } catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
-        };
-        return database.postWait(runnable);
-    }
-
-    /**
-     * 返回数据的类型
-     */
-    private enum ReturnCount
-    {
-        SINGLE, // 单个对象
-        ARRAY,  // 数组
-        LIST    // 列表
-    }
-
-    /**
-     * 将查询的结果，转换成type所对应的类型对象
-     */
-    private Object parseObject(Cursor cursor, Class<?> type)
-    {
-        String[] columnNames = cursor.getColumnNames();
-        if (Converts.hasConvert(type)) // 解析基本类型
+            };
+            return database.postWait(arrayRunnable);
+        } else
         {
-            return parseObjectByName(cursor, columnNames[0], type);
-        } else // 解析自定义类型
-        {
-            try
-            {
-                List<Field> fields = RoomLiteUtil.getFields(type);
-                Object cusObj = type.newInstance();
-                for (String columnName : columnNames)
-                {
-                    Field field = null;
-                    for (Field f : fields)
-                    {
-                        if (columnName.equals(RoomLiteUtil.getColumnName(f)))
-                        {
-                            field = f;
-                            break;
-                        }
-                    }
-                    if (field != null)
-                    {
-                        Object value = parseObjectByName(cursor, columnName, field.getType());
-                        field.set(cusObj, value);
-                    }
-                }
-                return cusObj;
-            } catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
+            ContainerAdapter<?> adapter = Adapters.getAdapter(returnType);
+            if (adapter == null)
+                throw new RuntimeException(returnType + " 类型不受支持");
+            Type genericType = getGenericType(method);
+            return adapter.newInstance(database, genericType, querySQLBuilder.toString(), whereArgs);
         }
     }
 
-    /**
-     * 将查询的结果，根据名称,获取基础类型的对象
-     *
-     * @param cursor
-     * @param columnName
-     * @param type
-     * @return
-     */
-    private Object parseObjectByName(Cursor cursor, String columnName, Class<?> type)
+
+    public static boolean checkSupportSingle(Cursor cursor, Class<?> klass)
     {
-        int columnIndex = cursor.getColumnIndex(columnName);
-        Convert convert = Converts.getConvert(type);
-        if (convert == null)
-            throw new RuntimeException(type.getCanonicalName() + "所对应的数据库类型转换器未定义。");
-        return convert.cursorToJavaObject(cursor, columnIndex);
+        int columnCount = cursor.getColumnCount();
+        int count = cursor.getCount();
+        if (Converts.hasConvert(klass)) // 基本类型的单个对象
+        {
+            if (count > 1 || columnCount > 1)
+                return false;
+        } else // 表的类型的单个对象
+        {
+            if (count > 1)
+                return false;
+        }
+        return true;
     }
 
     /**
      * 获取函数返回List泛型的真实类型
      */
-    private Class<?> getListGenericType(Method method)
+    private Type getGenericType(Method method)
     {
         Type genericReturnType = method.getGenericReturnType();
         if (!(genericReturnType instanceof ParameterizedType))
-            throw new RuntimeException(method + " 返回类型List<>里必须写上泛型");
+            throw new RuntimeException(method + " 返回类型<>里必须写上泛型");
         ParameterizedType type = (ParameterizedType) genericReturnType;
-        Type genericType = type.getActualTypeArguments()[0];
-        if (!(genericType instanceof Class))
-            throw new RuntimeException(method + " 返回类型List<?>里必须写上明确泛型");
-        return (Class<?>) genericType;
+        return type.getActualTypeArguments()[0];
     }
 
     /**
