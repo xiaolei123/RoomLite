@@ -35,7 +35,17 @@ public class MainActivity extends AppCompatActivity
 
         text.setOnClickListener(v ->
         {
-            roomLite(userDao);
+            for (int i = 0; i < 10; i++)
+            {
+                new Thread()
+                {
+                    @Override
+                    public void run()
+                    {
+                        roomLite(userDao);
+                    }
+                }.start();
+            }
             //room(peopleDao);
         });
     }

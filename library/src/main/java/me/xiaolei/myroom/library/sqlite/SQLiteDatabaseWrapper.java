@@ -1,10 +1,12 @@
 package me.xiaolei.myroom.library.sqlite;
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.database.CharArrayBuffer;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.DataSetObserver;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
@@ -12,25 +14,67 @@ import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * 数据库操作类的包装类，主要致力于解决多线程并发读写的问题
+ */
 public class SQLiteDatabaseWrapper
 {
-    private final AtomicBoolean read = new AtomicBoolean(true);
+    private final Lock lock = new ReentrantLock();
+    // 当前的状态
+    private final AtomicReference<Status> status = new AtomicReference<>(Status.IDLE);
+    // 真正执行的数据库类
     private final SQLiteDatabase database;
 
     public SQLiteDatabaseWrapper(SQLiteDatabase database)
     {
         this.database = database;
     }
-    
 
+    public void execSQL(String sql) throws SQLException
+    {
+        
+    }
+
+    public void execSQL(String sql, Object[] bindArgs) throws SQLException
+    {
+        
+        this.database.execSQL(sql, bindArgs);
+    }
+
+    public long insert(String table, String nullColumnHack, ContentValues values)
+    {
+        return this.database.insert(table, nullColumnHack, values);
+    }
+
+    public int delete(String table, String whereClause, String[] whereArgs)
+    {
+        return this.database.delete(table, whereClause, whereArgs);
+    }
+
+    public int update(String table, ContentValues values, String whereClause, String[] whereArgs)
+    {
+        return this.database.update(table, values, whereClause, whereArgs);
+    }
+
+    public Cursor rawQuery(String sql, String[] selectionArgs)
+    {
+        return this.database.rawQuery(sql, selectionArgs);
+    }
+
+    enum Status
+    {
+        IDLE, READING, WRITING
+    }
 }
 
 class CursorWrap implements Cursor
 {
     private final Cursor cursor;
-    
+
     public CursorWrap(Cursor cursor)
     {
         this.cursor = cursor;
