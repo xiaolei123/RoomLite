@@ -88,7 +88,7 @@ public class QueryProxy extends DaoProxy
                 try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
                 {
                     if (!checkSupportSingle(cursor, returnType))
-                        throw new RuntimeException(returnType + " 返回类型的参数不支持");
+                        throw new RuntimeException(returnType + " 返回类型的参数和查询出来的数据不匹配");
                     if (cursor.moveToNext())
                         return QueryUtil.parseObject(cursor, returnType);
                     else
@@ -109,6 +109,8 @@ public class QueryProxy extends DaoProxy
             {
                 try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
                 {
+                    if (!checkSupportSingle(cursor, comType))
+                        throw new RuntimeException(comType + "[] 返回类型的参数和查询出来的数据不匹配");
                     Object[] array = (Object[]) Array.newInstance(comType, cursor.getCount());
                     while (cursor.moveToNext())
                     {
