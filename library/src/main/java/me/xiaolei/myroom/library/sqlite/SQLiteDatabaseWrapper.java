@@ -14,16 +14,21 @@ import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import me.xiaolei.myroom.library.sqlite.calls.LiteRunnable;
 
 /**
  * 数据库操作类的包装类，主要致力于解决多线程并发读写的问题
  */
 public class SQLiteDatabaseWrapper
 {
-    private final Lock lock = new ReentrantLock();
     // 当前的状态
     private final AtomicReference<Status> status = new AtomicReference<>(Status.IDLE);
     // 真正执行的数据库类
@@ -36,12 +41,11 @@ public class SQLiteDatabaseWrapper
 
     public void execSQL(String sql) throws SQLException
     {
-        
+        this.database.execSQL(sql);
     }
 
     public void execSQL(String sql, Object[] bindArgs) throws SQLException
     {
-        
         this.database.execSQL(sql, bindArgs);
     }
 
@@ -63,6 +67,20 @@ public class SQLiteDatabaseWrapper
     public Cursor rawQuery(String sql, String[] selectionArgs)
     {
         return this.database.rawQuery(sql, selectionArgs);
+    }
+
+    public <T> T postWait(ExecutorService executor, LiteRunnable<T> runnable)
+    {
+        Callable<T> callable = () -> runnable.run(database);
+        FutureTask<T> task = new FutureTask<T>(callable);
+        executor.submit(task);
+        try
+        {
+            return task.get(/*30, TimeUnit.SECONDS*/);
+        } catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     enum Status
