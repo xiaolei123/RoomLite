@@ -24,7 +24,7 @@ public abstract class RoomLiteDatabase
     private final String dbName;
     private final File dbDir;
     private final Map<Class<?>, Object> daoCache = new ConcurrentHashMap<>();
-    private final BaseDatabase database;
+    private final LiteDataBase database;
 
     /**
      * 初始化数据库，

@@ -3,6 +3,8 @@ package me.xiaolei.myroom.library;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import me.xiaolei.myroom.library.adapters.Adapters;
+import me.xiaolei.myroom.library.adapters.ContainerAdapter;
 import me.xiaolei.myroom.library.coverts.Convert;
 import me.xiaolei.myroom.library.coverts.Converts;
 import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
@@ -36,5 +38,15 @@ public class RoomLite
     public static void addConvert(Class<? extends Convert> convertKlass)
     {
         Converts.addConvert(convertKlass);
+    }
+
+    /**
+     * 添加适配器
+     *
+     * @param adapter
+     */
+    public static void addAdapter(ContainerAdapter<?> adapter)
+    {
+        Adapters.addAdapter(adapter);
     }
 }

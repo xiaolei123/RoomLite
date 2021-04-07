@@ -15,7 +15,7 @@ import me.xiaolei.myroom.library.anno.dao.Query;
 import me.xiaolei.myroom.library.coverts.Convert;
 import me.xiaolei.myroom.library.coverts.Converts;
 import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
-import me.xiaolei.myroom.library.sqlite.BaseDatabase;
+import me.xiaolei.myroom.library.sqlite.LiteDataBase;
 import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
 import me.xiaolei.myroom.library.sqlite.calls.LiteRunnable;
 import me.xiaolei.myroom.library.util.QueryUtil;
@@ -23,7 +23,7 @@ import me.xiaolei.myroom.library.util.RoomLiteUtil;
 
 public class QueryProxy extends DaoProxy
 {
-    public QueryProxy(RoomLiteDatabase liteDatabase, BaseDatabase database)
+    public QueryProxy(RoomLiteDatabase liteDatabase, LiteDataBase database)
     {
         super(liteDatabase, database);
     }

@@ -16,7 +16,7 @@ import me.xiaolei.myroom.library.dao_proxy.proxy.DeleteProxy;
 import me.xiaolei.myroom.library.dao_proxy.proxy.InsertProxy;
 import me.xiaolei.myroom.library.dao_proxy.proxy.QueryProxy;
 import me.xiaolei.myroom.library.dao_proxy.proxy.UpdateProxy;
-import me.xiaolei.myroom.library.sqlite.BaseDatabase;
+import me.xiaolei.myroom.library.sqlite.LiteDataBase;
 import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
 
 /**
@@ -37,7 +37,7 @@ public class DaoProxyHandler extends BaseProxyHandler
     private final RoomLiteDatabase liteDatabase;
 
 
-    public static InvocationHandler getHandler(RoomLiteDatabase liteDatabase, BaseDatabase database)
+    public static InvocationHandler getHandler(RoomLiteDatabase liteDatabase, LiteDataBase database)
     {
         DaoProxyHandler handler = handlerCache.get(liteDatabase);
         if (handler == null)
@@ -51,7 +51,7 @@ public class DaoProxyHandler extends BaseProxyHandler
         return handler;
     }
 
-    private DaoProxyHandler(RoomLiteDatabase liteDatabase, BaseDatabase database)
+    private DaoProxyHandler(RoomLiteDatabase liteDatabase, LiteDataBase database)
     {
         this.liteDatabase = liteDatabase;
         insertProxy = new InsertProxy(liteDatabase, database);

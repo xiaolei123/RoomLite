@@ -2,7 +2,7 @@ package me.xiaolei.myroom.library.adapters;
 
 import java.lang.reflect.Type;
 
-import me.xiaolei.myroom.library.sqlite.BaseDatabase;
+import me.xiaolei.myroom.library.sqlite.LiteDataBase;
 
 /**
  * 执行函数的返回值适配器，<br/>
@@ -24,5 +24,5 @@ public abstract class ContainerAdapter<T>
         return this.klass;
     }
 
-    public abstract T newInstance(BaseDatabase database, Type genericType, String sql, String[] args);
+    public abstract T newInstance(LiteDataBase database, Type genericType, String sql, String[] args);
 }

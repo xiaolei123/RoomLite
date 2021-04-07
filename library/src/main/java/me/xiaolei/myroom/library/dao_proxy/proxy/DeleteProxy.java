@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
-import me.xiaolei.myroom.library.sqlite.BaseDatabase;
+import me.xiaolei.myroom.library.sqlite.LiteDataBase;
 import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
 import me.xiaolei.myroom.library.sqlite.calls.LiteRunnable;
 import me.xiaolei.myroom.library.util.RoomLiteUtil;
@@ -18,7 +18,7 @@ import me.xiaolei.myroom.library.util.RoomLiteUtil;
 public class DeleteProxy extends DaoProxy
 {
 
-    public DeleteProxy(RoomLiteDatabase liteDatabase, BaseDatabase database)
+    public DeleteProxy(RoomLiteDatabase liteDatabase, LiteDataBase database)
     {
         super(liteDatabase, database);
     }
