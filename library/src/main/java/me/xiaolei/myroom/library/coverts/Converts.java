@@ -1,7 +1,7 @@
 package me.xiaolei.myroom.library.coverts;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import me.xiaolei.myroom.library.anno.Column;
 import me.xiaolei.myroom.library.coverts.base.ToBooleanConvert;
@@ -17,29 +17,29 @@ import me.xiaolei.myroom.library.coverts.impls.*;
 
 public class Converts
 {
-    private static final List<Convert> converts = new CopyOnWriteArrayList<>();
+    private static final Map<Class<?>, Convert> converts = new HashMap<>();
 
     static
     {
-        converts.add(new BooleanBoxConvert());
-        converts.add(new BooleanConvert());
-        converts.add(new ByteArrayConvert());
-        converts.add(new ByteBoxArrayConvert());
-        converts.add(new ByteBoxConvert());
-        converts.add(new ByteConvert());
-        converts.add(new CharBoxConvert());
-        converts.add(new CharConvert());
-        converts.add(new StringConvert());
-        converts.add(new DoubleBoxConvert());
-        converts.add(new DoubleConvert());
-        converts.add(new FloatBoxConvert());
-        converts.add(new FloatConvert());
-        converts.add(new IntConvert());
-        converts.add(new IntegerConvert());
-        converts.add(new LongBoxConvert());
-        converts.add(new LongConvert());
-        converts.add(new ShortBoxConvert());
-        converts.add(new ShortConvert());
+        addConvert(new BooleanBoxConvert());
+        addConvert(new BooleanConvert());
+        addConvert(new ByteArrayConvert());
+        addConvert(new ByteBoxArrayConvert());
+        addConvert(new ByteBoxConvert());
+        addConvert(new ByteConvert());
+        addConvert(new CharBoxConvert());
+        addConvert(new CharConvert());
+        addConvert(new StringConvert());
+        addConvert(new DoubleBoxConvert());
+        addConvert(new DoubleConvert());
+        addConvert(new FloatBoxConvert());
+        addConvert(new FloatConvert());
+        addConvert(new IntConvert());
+        addConvert(new IntegerConvert());
+        addConvert(new LongBoxConvert());
+        addConvert(new LongConvert());
+        addConvert(new ShortBoxConvert());
+        addConvert(new ShortConvert());
     }
 
     /**
@@ -59,12 +59,7 @@ public class Converts
      */
     public static Convert getConvert(Class<?> javaType)
     {
-        for (Convert convert : converts)
-        {
-            if (convert.getJavaType() == javaType)
-                return convert;
-        }
-        return null;
+        return converts.get(javaType);
     }
 
     /**
@@ -85,12 +80,12 @@ public class Converts
     /**
      * 添加自定义类型转换器
      */
-    public static void addConvert(Class<? extends Convert> convertKlass)
+    public static void addConvert(Convert convert)
     {
         try
         {
-            if (!isInnerConvert(convertKlass))
-                throw new RuntimeException(convertKlass.getCanonicalName() + " 必须继承：\n" +
+            if (!isInnerConvert(convert))
+                throw new RuntimeException(convert.getClass().getCanonicalName() + " 必须继承：\n" +
                         "ToByteConvert\n" +
                         "ToLongConvert\n" +
                         "ToFloatConvert\n" +
@@ -101,8 +96,7 @@ public class Converts
                         "ToBooleanConvert\n" +
                         "ToIntegerConvert\n" +
                         "其中的一个。");
-            Convert convert = convertKlass.newInstance();
-            converts.add(convert);
+            converts.put(convert.getJavaType(), convert);
         } catch (Exception e)
         {
             throw new RuntimeException(e);
@@ -112,29 +106,26 @@ public class Converts
     /**
      * 判断类型是否是继承了所能支持的基本的内置类型转换器
      */
-    private static boolean isInnerConvert(Class<?> klass)
+    private static boolean isInnerConvert(Convert convert)
     {
-        if (klass == ToByteConvert.class)
+        if (convert instanceof ToByteConvert)
             return true;
-        if (klass == ToLongConvert.class)
+        if (convert instanceof ToLongConvert)
             return true;
-        if (klass == ToFloatConvert.class)
+        if (convert instanceof ToFloatConvert)
             return true;
-        if (klass == ToDoubleConvert.class)
+        if (convert instanceof ToDoubleConvert)
             return true;
-        if (klass == ToShortConvert.class)
+        if (convert instanceof ToShortConvert)
             return true;
-        if (klass == ToByteArrayConvert.class)
+        if (convert instanceof ToByteArrayConvert)
             return true;
-        if (klass == ToStringConvert.class)
+        if (convert instanceof ToStringConvert)
             return true;
-        if (klass == ToBooleanConvert.class)
+        if (convert instanceof ToBooleanConvert)
             return true;
-        if (klass == ToIntegerConvert.class)
+        if (convert instanceof ToIntegerConvert)
             return true;
-        Class<?> superKlass = klass.getSuperclass();
-        if (superKlass == null || superKlass == Object.class)
-            return false;
-        return isInnerConvert(superKlass);
+        return false;
     }
 }
