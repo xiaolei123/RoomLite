@@ -83,46 +83,39 @@ public class QueryProxy extends DaoProxy
         Convert convert = Converts.getConvert(returnType);
         if (convert != null || returnType == tableKlass)
         {
-            LiteRunnable<Object> singleRunnable = database ->
+            try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
             {
-                try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
-                {
-                    if (!checkSupportSingle(cursor, returnType))
-                        throw new RuntimeException(returnType + " 返回类型的参数和查询出来的数据不匹配");
-                    if (cursor.moveToNext())
-                        return QueryUtil.parseObject(cursor, returnType);
-                    else
-                        return RoomLiteUtil.defaultValue(returnType);
-                } catch (Exception e)
-                {
-                    throw new RuntimeException(e);
-                }
-            };
-            return database.postWait(singleRunnable);
+                if (!checkSupportSingle(cursor, returnType))
+                    throw new RuntimeException(returnType + " 返回类型的参数和查询出来的数据不匹配");
+                if (cursor.moveToNext())
+                    return QueryUtil.parseObject(cursor, returnType);
+                else
+                    return RoomLiteUtil.defaultValue(returnType);
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
         } else if (returnType.isArray()) // 是数组
         {
             Class<?> comType = returnType.getComponentType();
             Convert comConvert = Converts.getConvert(comType);
             if (comConvert == null && comType != tableKlass)
                 throw new RuntimeException("数组类型:" + comType + " 不受支持");
-            LiteRunnable<Object> arrayRunnable = database ->
+
+            try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
             {
-                try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
+                if (!checkSupportSingle(cursor, comType))
+                    throw new RuntimeException(comType + "[] 返回类型的参数和查询出来的数据不匹配");
+                Object[] array = (Object[]) Array.newInstance(comType, cursor.getCount());
+                while (cursor.moveToNext())
                 {
-                    if (!checkSupportSingle(cursor, comType))
-                        throw new RuntimeException(comType + "[] 返回类型的参数和查询出来的数据不匹配");
-                    Object[] array = (Object[]) Array.newInstance(comType, cursor.getCount());
-                    while (cursor.moveToNext())
-                    {
-                        array[cursor.getPosition()] = QueryUtil.parseObject(cursor, comType);
-                    }
-                    return array;
-                } catch (Exception e)
-                {
-                    throw new RuntimeException(e);
+                    array[cursor.getPosition()] = QueryUtil.parseObject(cursor, comType);
                 }
-            };
-            return database.postWait(arrayRunnable);
+                return array;
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
         } else
         {
             ContainerAdapter<?> adapter = Adapters.getAdapter(returnType);
@@ -140,7 +133,7 @@ public class QueryProxy extends DaoProxy
         int count = cursor.getCount();
         if (Converts.hasConvert(klass)) // 基本类型的单个对象
         {
-            if (count > 1 || columnCount > 1)
+            if (columnCount > 1)
                 return false;
         } else // 表的类型的单个对象
         {

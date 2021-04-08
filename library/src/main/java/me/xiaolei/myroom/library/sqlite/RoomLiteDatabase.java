@@ -96,18 +96,6 @@ public abstract class RoomLiteDatabase
     }
 
     /**
-     * 版本降级
-     *
-     * @param db
-     * @param oldVersion 旧版本号
-     * @param newVersion 新版本号
-     */
-    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion)
-    {
-
-    }
-
-    /**
      * 获取表
      *
      * @return

@@ -1,8 +1,8 @@
 package me.xiaolei.myroom.library.sqlite.calls;
 
-import android.database.sqlite.SQLiteDatabase;
+import me.xiaolei.myroom.library.sqlite.SQLiteDatabaseWrapper;
 
 public interface LiteRunnable<T>
 {
-    T run(SQLiteDatabase database);
+    T run(SQLiteDatabaseWrapper database);
 }

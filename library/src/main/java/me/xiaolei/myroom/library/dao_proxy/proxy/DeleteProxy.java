@@ -92,38 +92,28 @@ public class DeleteProxy extends DaoProxy
                 }
                 whereArgss.add(values);
             }
-            LiteRunnable<Integer> runnable = (database) ->
+            
+            int count = 0;
+            database.beginTransaction();
+            try
             {
-                database.beginTransaction();
-                int count = 0;
-                try
+                for (String[] whereArgs : whereArgss)
                 {
-                    for (String[] whereArgs : whereArgss)
-                    {
-                        count += database.delete(tableName, whereClause.toString(), whereArgs);
-                    }
-                    database.setTransactionSuccessful();
-                }catch (Exception e)
-                {
-                    e.printStackTrace();
-                } finally
-                {
-                    database.endTransaction();
+                    count += database.delete(tableName, whereClause.toString(), whereArgs);
                 }
-                return count;
-            };
-            // 如果返回值是 int 则返回改变行
-            if (returnType == int.class)
+                database.setTransactionSuccessful();
+            } catch (Exception e)
             {
-                changeCount += database.postWait(runnable);
-            } else
+                e.printStackTrace();
+            } finally
             {
-                database.post(runnable);
+                database.endTransaction();
             }
+            changeCount += count;
         }
-
         return changeCount;
     }
+
 
     /**
      * 处理单个对象

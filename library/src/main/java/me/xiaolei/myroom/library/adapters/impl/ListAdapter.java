@@ -26,20 +26,18 @@ public class ListAdapter extends ContainerAdapter<List>
         if (!(genericType instanceof Class))
             throw new RuntimeException("List的泛型必须是一个准确的可解析的类型");
         Class<?> klass = (Class<?>) genericType;
-        return database.postWait(sqLite ->
+
+        List<? super Object> list = new LinkedList<>();
+        try (Cursor cursor = database.rawQuery(sql, args))
         {
-            List<? super Object> list = new LinkedList<>();
-            try (Cursor cursor = sqLite.rawQuery(sql, args))
+            while (cursor.moveToNext())
             {
-                while (cursor.moveToNext())
-                {
-                    list.add(QueryUtil.parseObject(cursor, klass));
-                }
-            } catch (Exception e)
-            {
-                e.printStackTrace();
+                list.add(QueryUtil.parseObject(cursor, klass));
             }
-            return list;
-        });
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

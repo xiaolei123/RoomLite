@@ -13,7 +13,6 @@ import java.util.Map;
 import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
 import me.xiaolei.myroom.library.sqlite.LiteDataBase;
 import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
-import me.xiaolei.myroom.library.sqlite.calls.LiteRunnable;
 import me.xiaolei.myroom.library.util.RoomLiteUtil;
 
 /**
@@ -74,38 +73,24 @@ public class InsertProxy extends DaoProxy
             // 获取类当前的表名
             String tableName = RoomLiteUtil.getTableName(klass);
 
-            LiteRunnable<Integer> runnable = (database) ->
+            int count = 0;
+            database.beginTransaction();
+            try
             {
-                int count = 0;
-                database.beginTransaction();
-                try
+                for (ContentValues contentValue : contentValues)
                 {
-                    for (ContentValues contentValue : contentValues)
-                    {
-                        database.insert(tableName, null, contentValue);
-                        count++;
-                    }
-                    database.setTransactionSuccessful();
-                }catch (Exception e)
-                {
-                    e.printStackTrace();
-                } finally
-                {
-                    database.endTransaction();
+                    database.insert(tableName, null, contentValue);
+                    count++;
                 }
-                return count;
-            };
-
-            // 如果返回类型是int，则阻塞等待结果
-            if (returnType == int.class)
+                database.setTransactionSuccessful();
+            }catch (Exception e)
             {
-                changeCount += database.postWait(runnable);
-            } else
+                e.printStackTrace();
+            } finally
             {
-                // 否则异步提交数据，但是不关心执行结果
-                // 提交插入数据
-                database.post(runnable);
+                database.endTransaction();
             }
+            changeCount += count;
         }
         return changeCount;
     }

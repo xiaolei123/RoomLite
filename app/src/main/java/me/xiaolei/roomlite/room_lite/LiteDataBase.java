@@ -1,5 +1,6 @@
 package me.xiaolei.roomlite.room_lite;
 
+
 import android.database.sqlite.SQLiteDatabase;
 
 import androidx.annotation.Nullable;
@@ -28,11 +29,10 @@ public class LiteDataBase extends RoomLiteDatabase
         return true;
     }
 
-    // 数据库升级
     @Override
     public void onUpgrade(@Nullable SQLiteDatabase db, int oldVersion, int newVersion)
     {
-
+        super.onUpgrade(db, oldVersion, newVersion);
     }
 
     // 数据库版本

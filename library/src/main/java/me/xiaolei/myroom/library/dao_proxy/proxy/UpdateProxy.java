@@ -94,37 +94,26 @@ public class UpdateProxy extends DaoProxy
                 // 获取这个对象转换成的ContentValues
                 contentValues.add(RoomLiteUtil.convertContentValue(klass, updateObj));
             }
-
-            LiteRunnable<Integer> runnable = (database) ->
+            
+            int count = 0;
+            database.beginTransaction();
+            try
             {
-                int count = 0;
-                database.beginTransaction();
-                try
+                for (int i = 0; i < whereArgss.size(); i++)
                 {
-                    for (int i = 0; i < whereArgss.size(); i++)
-                    {
-                        String[] whereArgs = whereArgss.get(i);
-                        ContentValues values = contentValues.get(i);
-                        count += database.update(tableName, values, whereClause.toString(), whereArgs);
-                    }
-                    database.setTransactionSuccessful();
-                }catch (Exception e)
-                {
-                    e.printStackTrace();
-                } finally
-                {
-                    database.endTransaction();
+                    String[] whereArgs = whereArgss.get(i);
+                    ContentValues values = contentValues.get(i);
+                    count += database.update(tableName, values, whereClause.toString(), whereArgs);
                 }
-                return count;
-            };
-
-            if (returnType == int.class)
+                database.setTransactionSuccessful();
+            } catch (Exception e)
             {
-                changeCount += database.postWait(runnable);
-            } else
+                e.printStackTrace();
+            } finally
             {
-                database.post(runnable);
+                database.endTransaction();
             }
+            changeCount += count;
         }
         return changeCount;
     }

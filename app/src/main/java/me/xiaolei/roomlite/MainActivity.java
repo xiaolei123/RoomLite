@@ -11,6 +11,7 @@ import me.xiaolei.myroom.library.RoomLite;
 import me.xiaolei.roomlite.room.PeopleDao;
 import me.xiaolei.roomlite.room_lite.DateConvert;
 import me.xiaolei.roomlite.room_lite.LiteDataBase;
+import me.xiaolei.roomlite.room_lite.User;
 import me.xiaolei.roomlite.room_lite.UserDao;
 
 public class MainActivity extends AppCompatActivity
@@ -53,12 +54,13 @@ public class MainActivity extends AppCompatActivity
     private void roomLite(UserDao dao)
     {
         long old_time = System.currentTimeMillis();
-        System.out.println(dao.getFirst());
-        System.out.println(dao.queryAll());
-        System.out.println(dao.query());
-        System.out.println(dao.queryCount());
-        System.out.println(dao.firstId());
-        System.out.println(Arrays.toString(dao.queryNames()));
+        dao.addUser(new User[]{new User(), new User(), new User()});
+        dao.getFirst();
+        dao.queryAll();
+        dao.query();
+        dao.queryCount();
+        dao.firstId();
+        dao.queryNames();
         System.out.println("耗时：" + (System.currentTimeMillis() - old_time));
     }
 
