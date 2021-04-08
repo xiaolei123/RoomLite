@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
 import me.xiaolei.myroom.library.sqlite.LiteDataBase;
@@ -73,24 +74,16 @@ public class InsertProxy extends DaoProxy
             // 获取类当前的表名
             String tableName = RoomLiteUtil.getTableName(klass);
 
-            int count = 0;
-            database.beginTransaction();
-            try
+            AtomicInteger count = new AtomicInteger();
+            database.doTransaction((transaction) ->
             {
                 for (ContentValues contentValue : contentValues)
                 {
-                    database.insert(tableName, null, contentValue);
-                    count++;
+                    transaction.insert(tableName, null, contentValue);
+                    count.incrementAndGet();
                 }
-                database.setTransactionSuccessful();
-            }catch (Exception e)
-            {
-                e.printStackTrace();
-            } finally
-            {
-                database.endTransaction();
-            }
-            changeCount += count;
+            });
+            changeCount += count.get();
         }
         return changeCount;
     }

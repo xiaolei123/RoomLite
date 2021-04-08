@@ -1,8 +1,6 @@
 package me.xiaolei.myroom.library.sqlite;
 
-import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -11,18 +9,22 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import me.xiaolei.myroom.library.util.ThreadPoolFactory;
 
 /**
  * 数据库操作类的包装类，主要致力于解决多线程并发读写的问题
  */
 public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements Closeable
 {
+    private SQLiteDatabase readableDataBase;
+    private SQLiteDatabase writableDataBase;
+    private Transaction transaction;
+
     // 写的线程池
-    private final ExecutorService writeExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService writeExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadPoolFactory("writeExecutor"));
     // 读的线程池
-    private final ExecutorService readExecutor = Executors.newCachedThreadPool();
+    private final ExecutorService readExecutor = Executors.newCachedThreadPool(new ThreadPoolFactory("readExecutor"));
 
     public SQLiteDatabaseWrapper(String dbPath, String name, int version)
     {
@@ -31,70 +33,29 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
         int flag = SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING;
     }
 
-    public void execSQL(String sql) throws SQLException
+    public void doTransaction(Transaction.TransactionRunnable runnable)
     {
         postWait(writeExecutor, (database) ->
         {
-            database.execSQL(sql);
+            database.beginTransaction();
+            try
+            {
+                runnable.run(transaction);
+                database.setTransactionSuccessful();
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            } finally
+            {
+                database.endTransaction();
+            }
             return null;
         });
-        System.out.println(123);
-    }
-
-    public void execSQL(String sql, Object[] bindArgs) throws SQLException
-    {
-        postWait(writeExecutor, (database) ->
-        {
-            database.execSQL(sql, bindArgs);
-            return null;
-        });
-    }
-
-    public long insert(String table, String nullColumnHack, ContentValues values)
-    {
-        return postWait(writeExecutor, (database) -> database.insert(table, nullColumnHack, values));
-    }
-
-    public int delete(String table, String whereClause, String[] whereArgs)
-    {
-        return postWait(writeExecutor, (database) -> database.delete(table, whereClause, whereArgs));
-    }
-
-    public int update(String table, ContentValues values, String whereClause, String[] whereArgs)
-    {
-        return postWait(writeExecutor, (database) -> database.update(table, values, whereClause, whereArgs));
     }
 
     public Cursor rawQuery(String sql, String[] selectionArgs)
     {
         return postWait(readExecutor, (database) -> database.rawQuery(sql, selectionArgs));
-    }
-
-    public void beginTransaction()
-    {
-        postWait(writeExecutor, (database) ->
-        {
-            database.beginTransaction();
-            return null;
-        });
-    }
-
-    public void setTransactionSuccessful()
-    {
-        postWait(writeExecutor, (database) ->
-        {
-            database.setTransactionSuccessful();
-            return null;
-        });
-    }
-
-    public void endTransaction()
-    {
-        postWait(writeExecutor, (database) ->
-        {
-            database.endTransaction();
-            return null;
-        });
     }
 
     public int getVersion()
@@ -119,9 +80,9 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
         super.close();
     }
 
-    private SQLiteDatabase readableDataBase;
-    private SQLiteDatabase writableDataBase;
-
+    /**
+     * 获取只读数据库
+     */
     private SQLiteDatabase getReadableSQLiteDatabase()
     {
         if (readableDataBase == null)
@@ -135,6 +96,9 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
         return readableDataBase;
     }
 
+    /**
+     * 获取只写数据库
+     */
     private SQLiteDatabase getWritableSQLiteDatabase()
     {
         if (writableDataBase == null)
@@ -142,7 +106,10 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
             synchronized (this)
             {
                 if (writableDataBase == null)
+                {
                     writableDataBase = this.getWritableDatabase();
+                    transaction = new Transaction(writableDataBase);
+                }
             }
         }
         return writableDataBase;
@@ -159,11 +126,7 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
     private <T> T postWait(ExecutorService executor, LiteRunnable<T> runnable)
     {
         SQLiteDatabase database = executor == readExecutor ? this.getReadableSQLiteDatabase() : this.getWritableSQLiteDatabase();
-        Callable<T> callable = () ->
-        {
-            System.out.println(Thread.currentThread());
-            return runnable.run(database);
-        };
+        Callable<T> callable = () -> runnable.run(database);
         FutureTask<T> task = new FutureTask<T>(callable);
         executor.submit(task);
         try

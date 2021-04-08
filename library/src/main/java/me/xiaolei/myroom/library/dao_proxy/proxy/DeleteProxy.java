@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
 import me.xiaolei.myroom.library.sqlite.LiteDataBase;
@@ -92,24 +93,17 @@ public class DeleteProxy extends DaoProxy
                 }
                 whereArgss.add(values);
             }
-            
-            int count = 0;
-            database.beginTransaction();
-            try
+
+            AtomicInteger count = new AtomicInteger(0);
+            database.doTransaction(transaction ->
             {
                 for (String[] whereArgs : whereArgss)
                 {
-                    count += database.delete(tableName, whereClause.toString(), whereArgs);
+                    int changeRow = transaction.delete(tableName, whereClause.toString(), whereArgs);
+                    count.addAndGet(changeRow);
                 }
-                database.setTransactionSuccessful();
-            } catch (Exception e)
-            {
-                e.printStackTrace();
-            } finally
-            {
-                database.endTransaction();
-            }
-            changeCount += count;
+            });
+            changeCount += count.get();
         }
         return changeCount;
     }
