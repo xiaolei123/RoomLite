@@ -5,7 +5,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
 /**
- * 事务
+ * 事务，因为后续所有的有关于写的操作，都需要通过这个类完成
  */
 public class Transaction
 {

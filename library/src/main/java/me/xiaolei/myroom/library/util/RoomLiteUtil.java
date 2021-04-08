@@ -36,7 +36,9 @@ public class RoomLiteUtil
     private final static Map<Class<?>, String> tableNameMapper = new ConcurrentHashMap<>();
 
     /**
-     * 获取 @Entity 的表名称
+     * 获取 @Entity 的表名称<br/>
+     * 会优先去缓存里取名字，如果缓存里没有，则临时反射获取。<br/>
+     * <br/>
      *
      * @param klass
      * @return
@@ -62,7 +64,10 @@ public class RoomLiteUtil
     private final static Map<Field, String> columnNameMapper = new ConcurrentHashMap<>();
 
     /**
-     * 解析字段的，对应数据库的字段名称
+     * 解析字段的，对应数据库的字段名称<br/>
+     * <br/>
+     * 会优先去缓存里获取，获取不到，则通过反射进行获取<br/>
+     * <br/>
      */
     public static String getColumnName(Field field)
     {
@@ -85,7 +90,10 @@ public class RoomLiteUtil
     private final static Map<Class<?>, List<Field>> fieldCacheMapper = new ConcurrentHashMap<>();
 
     /**
-     * 获取一个entity class的所有的字段,并且自动忽略标记忽略的，或者不可访问的
+     * 获取一个entity class的所有的字段,并且自动忽略标记忽略的，或者不可访问的<br/>
+     * <br/>
+     * 会优先去缓存里获取，如果获取不到，则进行反射获取<br/>
+     * <br/>
      *
      * @param klass
      * @return
@@ -114,8 +122,10 @@ public class RoomLiteUtil
     private final static Map<Class<?>, List<Field>> primaryKeyMapper = new ConcurrentHashMap<>();
 
     /**
-     * 获取一个表中的所有主键的字段
-     *
+     * 获取一个表中的所有主键的字段<br/>
+     * <br/>
+     * 会优先去缓存里获取，如果获取不到，则进行反射获取<br/>
+     * <br/>
      * @param klass
      */
     public static List<Field> getPrimaryKeyField(Class<?> klass)

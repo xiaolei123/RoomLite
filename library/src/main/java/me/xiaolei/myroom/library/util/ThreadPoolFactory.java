@@ -3,6 +3,9 @@ package me.xiaolei.myroom.library.util;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * 给读写线程池取名字
+ */
 public class ThreadPoolFactory implements ThreadFactory
 {
     private final AtomicInteger id = new AtomicInteger(0);
@@ -12,7 +15,7 @@ public class ThreadPoolFactory implements ThreadFactory
     {
         this.group = group;
     }
-    
+
     @Override
     public Thread newThread(Runnable r)
     {
