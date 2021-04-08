@@ -3,21 +3,21 @@ package me.xiaolei.myroom.library.dao_proxy.proxy;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
 import me.xiaolei.myroom.library.sqlite.LiteDataBase;
 import me.xiaolei.myroom.library.sqlite.RoomLiteDatabase;
-import me.xiaolei.myroom.library.sqlite.calls.LiteRunnable;
 import me.xiaolei.myroom.library.util.RoomLiteUtil;
 
 public class DeleteProxy extends DaoProxy
 {
+    private final List<Class<?>> entities = new CopyOnWriteArrayList<>(liteDatabase.getEntities());
 
     public DeleteProxy(RoomLiteDatabase liteDatabase, LiteDataBase database)
     {
@@ -38,9 +38,8 @@ public class DeleteProxy extends DaoProxy
             return changeCount;
         }
         // 检查传过来的参数是不是在这个数据库中
-        List<Class<?>> entities = Arrays.asList(liteDatabase.getEntities());
         // 对传过来的数据进行分类
-        Map<Class<?>, List<Object>> assort = new LinkedHashMap<>();
+        Map<Class<?>, List<Object>> assort = new HashMap<>();
         for (Object arg : args)
         {
             Class<?> objklass = arg.getClass();

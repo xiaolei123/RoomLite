@@ -4,11 +4,11 @@ package me.xiaolei.myroom.library.dao_proxy.proxy;
 import android.content.ContentValues;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import me.xiaolei.myroom.library.dao_proxy.DaoProxy;
@@ -21,6 +21,8 @@ import me.xiaolei.myroom.library.util.RoomLiteUtil;
  */
 public class InsertProxy extends DaoProxy
 {
+    private final List<Class<?>> entities = new CopyOnWriteArrayList<>(liteDatabase.getEntities());
+    
     public InsertProxy(RoomLiteDatabase liteDatabase, LiteDataBase database)
     {
         super(liteDatabase, database);
@@ -40,16 +42,14 @@ public class InsertProxy extends DaoProxy
             return changeCount;
         }
         // 检查传过来的参数是不是在这个数据库中
-        List<Class<?>> entities = Arrays.asList(liteDatabase.getEntities());
         // 对传过来的数据进行分类
-        Map<Class<?>, List<Object>> assort = new LinkedHashMap<>();
+        Map<Class<?>, List<Object>> assort = new HashMap<>();
         for (Object arg : args)
         {
             Class<?> objklass = arg.getClass();
             if (objklass.isArray()) // 判断数组
             {
                 this.array((Object[]) arg, entities, assort);
-
             } else if (arg instanceof List) // 判断list
             {
                 this.list((List) arg, entities, assort);

@@ -29,8 +29,6 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
     public SQLiteDatabaseWrapper(String dbPath, String name, int version)
     {
         super(new CustomContentWrap(InitProvider.context, dbPath), name, null, version);
-        // flag
-        int flag = SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING;
     }
 
     public void doTransaction(Transaction.TransactionRunnable runnable)

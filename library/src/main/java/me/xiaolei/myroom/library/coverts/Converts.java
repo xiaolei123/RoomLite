@@ -1,6 +1,7 @@
 package me.xiaolei.myroom.library.coverts;
 
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import me.xiaolei.myroom.library.anno.Column;
 import me.xiaolei.myroom.library.coverts.base.ToBooleanConvert;
@@ -16,29 +17,29 @@ import me.xiaolei.myroom.library.coverts.impls.*;
 
 public class Converts
 {
-    private static final LinkedBlockingQueue<Convert> converts = new LinkedBlockingQueue<>();
+    private static final List<Convert> converts = new CopyOnWriteArrayList<>();
 
     static
     {
-        converts.offer(new BooleanBoxConvert());
-        converts.offer(new BooleanConvert());
-        converts.offer(new ByteArrayConvert());
-        converts.offer(new ByteBoxArrayConvert());
-        converts.offer(new ByteBoxConvert());
-        converts.offer(new ByteConvert());
-        converts.offer(new CharBoxConvert());
-        converts.offer(new CharConvert());
-        converts.offer(new StringConvert());
-        converts.offer(new DoubleBoxConvert());
-        converts.offer(new DoubleConvert());
-        converts.offer(new FloatBoxConvert());
-        converts.offer(new FloatConvert());
-        converts.offer(new IntConvert());
-        converts.offer(new IntegerConvert());
-        converts.offer(new LongBoxConvert());
-        converts.offer(new LongConvert());
-        converts.offer(new ShortBoxConvert());
-        converts.offer(new ShortConvert());
+        converts.add(new BooleanBoxConvert());
+        converts.add(new BooleanConvert());
+        converts.add(new ByteArrayConvert());
+        converts.add(new ByteBoxArrayConvert());
+        converts.add(new ByteBoxConvert());
+        converts.add(new ByteConvert());
+        converts.add(new CharBoxConvert());
+        converts.add(new CharConvert());
+        converts.add(new StringConvert());
+        converts.add(new DoubleBoxConvert());
+        converts.add(new DoubleConvert());
+        converts.add(new FloatBoxConvert());
+        converts.add(new FloatConvert());
+        converts.add(new IntConvert());
+        converts.add(new IntegerConvert());
+        converts.add(new LongBoxConvert());
+        converts.add(new LongConvert());
+        converts.add(new ShortBoxConvert());
+        converts.add(new ShortConvert());
     }
 
     /**
@@ -101,7 +102,7 @@ public class Converts
                         "ToIntegerConvert\n" +
                         "其中的一个。");
             Convert convert = convertKlass.newInstance();
-            converts.offer(convert);
+            converts.add(convert);
         } catch (Exception e)
         {
             throw new RuntimeException(e);

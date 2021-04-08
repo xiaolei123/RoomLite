@@ -4,10 +4,11 @@ import android.content.ContentValues;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import me.xiaolei.myroom.library.anno.Column;
 import me.xiaolei.myroom.library.anno.Entity;
@@ -31,6 +32,8 @@ public class RoomLiteUtil
      * 建表工具
      */
     public static final CreateSqlUtil Create = new CreateSqlUtil();
+    // 缓存表名
+    private final static Map<Class<?>, String> tableNameMapper = new ConcurrentHashMap<>();
 
     /**
      * 获取 @Entity 的表名称
@@ -40,31 +43,46 @@ public class RoomLiteUtil
      */
     public static String getTableName(Class<?> klass)
     {
-        Entity entity = klass.getAnnotation(Entity.class);
-        if (entity == null)
+        String tableName = tableNameMapper.get(klass);
+        if (tableName == null)
         {
-            return null;
+            Entity entity = klass.getAnnotation(Entity.class);
+            if (entity == null)
+            {
+                return null;
+            }
+            tableName = entity.name();
+            tableName = (tableName.isEmpty()) ? klass.getSimpleName() : tableName;
+            tableNameMapper.put(klass, tableName);
         }
-        String tableName = entity.name();
-        return (tableName.isEmpty()) ? klass.getSimpleName() : tableName;
+        return tableName;
     }
+
+    // 缓存字段名称
+    private final static Map<Field, String> columnNameMapper = new ConcurrentHashMap<>();
 
     /**
      * 解析字段的，对应数据库的字段名称
      */
     public static String getColumnName(Field field)
     {
-        Column column = field.getAnnotation(Column.class);
-        if (column == null || column.name().isEmpty())
+        String columnName = columnNameMapper.get(field);
+        if (columnName == null)
         {
-            return field.getName();
-        } else
-        {
-            return column.name();
+            Column column = field.getAnnotation(Column.class);
+            if (column == null || column.name().isEmpty())
+            {
+                columnName = field.getName();
+            } else
+            {
+                columnName = column.name();
+            }
+            columnNameMapper.put(field, columnName);
         }
+        return columnName;
     }
 
-    private final static Map<Class<?>, List<Field>> fieldCache = new ConcurrentHashMap<>();
+    private final static Map<Class<?>, List<Field>> fieldCacheMapper = new ConcurrentHashMap<>();
 
     /**
      * 获取一个entity class的所有的字段,并且自动忽略标记忽略的，或者不可访问的
@@ -74,11 +92,10 @@ public class RoomLiteUtil
      */
     public static List<Field> getFields(Class<?> klass)
     {
-        List<Field> fields = fieldCache.get(klass);
+        List<Field> fields = fieldCacheMapper.get(klass);
         if (fields == null)
         {
-            fields = new LinkedList<>();
-            fieldCache.put(klass, fields);
+            fields = new CopyOnWriteArrayList<>();
             Field[] dfields = klass.getDeclaredFields();
             for (Field field : dfields)
             {
@@ -88,9 +105,13 @@ public class RoomLiteUtil
                     continue;
                 fields.add(field);
             }
+            fieldCacheMapper.put(klass, fields);
         }
         return fields;
     }
+
+    // 主键缓存
+    private final static Map<Class<?>, List<Field>> primaryKeyMapper = new ConcurrentHashMap<>();
 
     /**
      * 获取一个表中的所有主键的字段
@@ -99,14 +120,19 @@ public class RoomLiteUtil
      */
     public static List<Field> getPrimaryKeyField(Class<?> klass)
     {
-        List<Field> primaryField = new LinkedList<>();
-        List<Field> allField = getFields(klass);
-        for (Field field : allField)
+        List<Field> primaryField = primaryKeyMapper.get(klass);
+        if (primaryField == null)
         {
-            if (RoomLiteUtil.isPrimaryKey(field))
+            primaryField = new ArrayList<>();
+            List<Field> allField = getFields(klass);
+            for (Field field : allField)
             {
-                primaryField.add(field);
+                if (RoomLiteUtil.isPrimaryKey(field))
+                {
+                    primaryField.add(field);
+                }
             }
+            primaryKeyMapper.put(klass, primaryField);
         }
         return primaryField;
     }
