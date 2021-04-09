@@ -20,7 +20,7 @@ dependencies {
 }
 ```
 
-![alt](https://www.jitpack.io/v/com.github.xiaolei123/RoomLite.svg)
+[![版本信息](https://www.jitpack.io/v/com.github.xiaolei123/RoomLite.svg)](https://www.jitpack.io/#xiaolei123/RoomLite)
 
 
 #### 使用说明
