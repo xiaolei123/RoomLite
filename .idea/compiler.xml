@@ -22,6 +22,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel target="1.7">
       <module name="RoomLite.app" target="1.8" />
+      <module name="RoomLite.compiler" target="1.8" />
       <module name="RoomLite.runtime" target="1.8" />
     </bytecodeTargetLevel>
   </component>

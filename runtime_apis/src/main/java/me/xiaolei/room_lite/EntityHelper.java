@@ -8,5 +8,5 @@ public interface EntityHelper
 
     public String getCreateSQL();
 
-    public Object newInstance(Cursor cursor);
+    public Object fromCursor(Cursor cursor);
 }
