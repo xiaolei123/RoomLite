@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
-import me.xiaolei.room_lite.library.RoomLite;
+import me.xiaolei.room_lite.runtime.RoomLite;
 import me.xiaolei.roomlite.room.PeopleDao;
 import me.xiaolei.roomlite.room_lite.DateConvert;
 import me.xiaolei.roomlite.room_lite.LiteDataBase;

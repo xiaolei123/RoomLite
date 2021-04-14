@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="me.xiaolei.room_lite.runtime">
+
+    <application>
+        <provider
+            android:name="me.xiaolei.room_lite.runtime.sqlite.InitProvider"
+            android:authorities="${applicationId}.myroom.init"
+            android:exported="false" />
+    </application>
+</manifest>

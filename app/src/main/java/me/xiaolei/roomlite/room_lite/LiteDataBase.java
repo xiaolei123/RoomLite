@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import androidx.annotation.Nullable;
 
-import me.xiaolei.room_lite.library.sqlite.RoomLiteDatabase;
+import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
 
 public class LiteDataBase extends RoomLiteDatabase
 {
