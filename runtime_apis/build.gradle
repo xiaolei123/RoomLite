@@ -7,3 +7,7 @@ java {
     sourceCompatibility = JavaVersion.VERSION_1_7
     targetCompatibility = JavaVersion.VERSION_1_7
 }
+
+dependencies {
+    compileOnly group: 'com.google.android', name: 'android', version: '4.1.1.4'
+}
