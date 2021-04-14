@@ -2,9 +2,9 @@ package me.xiaolei.roomlite.room_lite;
 
 import java.util.Date;
 
-import me.xiaolei.myroom.library.anno.Column;
-import me.xiaolei.myroom.library.anno.Entity;
-import me.xiaolei.myroom.library.anno.PrimaryKey;
+import me.xiaolei.room_lite.annotations.Column;
+import me.xiaolei.room_lite.annotations.Entity;
+import me.xiaolei.room_lite.annotations.PrimaryKey;
 
 @Entity(name = "User")
 public class User

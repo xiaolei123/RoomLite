@@ -4,11 +4,11 @@ package me.xiaolei.roomlite.room_lite;
 import java.util.Date;
 import java.util.List;
 
-import me.xiaolei.myroom.library.anno.dao.Dao;
-import me.xiaolei.myroom.library.anno.dao.Delete;
-import me.xiaolei.myroom.library.anno.dao.Insert;
-import me.xiaolei.myroom.library.anno.dao.Query;
-import me.xiaolei.myroom.library.anno.dao.Update;
+import me.xiaolei.room_lite.annotations.dao.Dao;
+import me.xiaolei.room_lite.annotations.dao.Delete;
+import me.xiaolei.room_lite.annotations.dao.Insert;
+import me.xiaolei.room_lite.annotations.dao.Query;
+import me.xiaolei.room_lite.annotations.dao.Update;
 
 @Dao
 public interface UserDao

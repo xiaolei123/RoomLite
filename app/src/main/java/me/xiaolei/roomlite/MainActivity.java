@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
-import me.xiaolei.myroom.library.RoomLite;
+import me.xiaolei.room_lite.library.RoomLite;
 import me.xiaolei.roomlite.room.PeopleDao;
 import me.xiaolei.roomlite.room_lite.DateConvert;
 import me.xiaolei.roomlite.room_lite.LiteDataBase;
@@ -44,19 +44,19 @@ public class MainActivity extends AppCompatActivity
         long old_time = System.currentTimeMillis();
         long last_time = old_time;
         dao.addUser(new User[]{new User(), new User(), new User()});
-        System.out.println("耗时：" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
+        System.out.println("耗时：addUser-" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
         dao.getFirst();
-        System.out.println("耗时：" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
+        System.out.println("耗时：getFirst-" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
         dao.queryAll();
-        System.out.println("耗时：" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
+        System.out.println("耗时：queryAll-" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
         dao.query();
-        System.out.println("耗时：" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
+        System.out.println("耗时：query-" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
         dao.queryCount();
-        System.out.println("耗时：" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
+        System.out.println("耗时：queryCount-" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
         dao.firstId();
-        System.out.println("耗时：" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
+        System.out.println("耗时：firstId-" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
         dao.queryNames();
-        System.out.println("耗时：" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
+        System.out.println("耗时：queryNames-" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
 
         System.out.println("总耗时：" + (System.currentTimeMillis() - old_time));
     }

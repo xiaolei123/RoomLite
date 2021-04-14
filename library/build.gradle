@@ -17,6 +17,7 @@ android {
 
 dependencies {
     compileOnly 'androidx.annotation:annotation:1.2.0'
+    api project(':annotations')
     // implementation 'androix.sqlite:sqlite:2.0.1'
     // implementation 'androix.sqlite:sqlite-framework:2.0.1'
 }

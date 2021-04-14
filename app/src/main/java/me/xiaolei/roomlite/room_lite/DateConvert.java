@@ -2,7 +2,7 @@ package me.xiaolei.roomlite.room_lite;
 
 import java.util.Date;
 
-import me.xiaolei.myroom.library.coverts.base.ToLongConvert;
+import me.xiaolei.room_lite.library.coverts.base.ToLongConvert;
 
 public class DateConvert extends ToLongConvert<Date>
 {
