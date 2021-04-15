@@ -22,6 +22,7 @@ import javax.lang.model.type.TypeMirror;
 import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.annotations.Column;
 import me.xiaolei.room_lite.annotations.Entity;
+import me.xiaolei.room_lite.annotations.PrimaryKey;
 import me.xiaolei.room_lite.compiler.Global;
 import me.xiaolei.room_lite.compiler.base.BaseProcessor;
 import me.xiaolei.room_lite.compiler.utils.ElementUtil;
@@ -90,12 +91,18 @@ public class EntityProcessor extends BaseProcessor
         MethodSpec getCreateSQL = this.getCreateSQL(element);
         // 创建实例
         MethodSpec newInstance = this.fromCursor(element);
+        // 对象转换成contentValues
+        MethodSpec toContentValues = this.toContentValues(element);
+        // 生成自动判断并且存入值
+        MethodSpec setContentValue = this.setContentValue();
 
         // 把方法添加到类里
         helperClass.addMethod(constructor.build());
         helperClass.addMethod(getTableName);
         helperClass.addMethod(getCreateSQL);
         helperClass.addMethod(newInstance);
+        helperClass.addMethod(toContentValues);
+        helperClass.addMethod(setContentValue);
         for (FieldSpec fieldSpec : fieldSpecs)
         {
             helperClass.addField(fieldSpec);
@@ -244,5 +251,99 @@ public class EntityProcessor extends BaseProcessor
         // 返回对象
         fromCursor.addStatement("return obj").returns(TypeName.OBJECT);
         return fromCursor.build();
+    }
+
+
+    /**
+     * 将对象转换成 ContentValues的
+     */
+    private MethodSpec toContentValues(Element element)
+    {
+        String type = element.asType().toString();
+        List<VariableElement> fields = ElementUtil.getFields(element);
+
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("toContentValues")
+                .returns(Global.ContentValues)
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
+                .addParameter(ClassName.OBJECT, "obj");
+        // 判断数据类型
+        builder.addCode("if (!(obj instanceof $N))", type);
+        // 抛出数据类型异常
+        builder.addStatement("throw new RuntimeException(\"obj not instanceof $N\")", type);
+        // 类型强转换
+        builder.addStatement("$N new_obj = ($N)obj", type, type);
+        // 新建对象
+        builder.addStatement("$T values = new $T()", Global.ContentValues, Global.ContentValues);
+
+        for (VariableElement field : fields)
+        {
+            // 变量名称
+            String fieldName = field.getSimpleName().toString();
+            // 字段名称
+            String columnName = ElementUtil.getColumnName(field);
+            // 转换器名称
+            String convertFieldName = fieldName + "$$convert";
+            // 拿到值的名称
+            String valueName = fieldName + "_result";
+            // 判断是否主键，并且是否是自动增长，如果是自动增长的数据，则不进行 增 改 的计算
+            PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
+            if (primaryKey != null && primaryKey.autoGenerate())
+            {
+                continue;
+            }
+            // 首先利用转换器，拿到转换后的值
+            builder.addStatement("Object $N = $N.convertToDataBaseObject(new_obj.$N)", valueName, convertFieldName, fieldName);
+            // 分别赋值
+            builder.addStatement("this.setContentValue($N,$S,$N,values)", convertFieldName, columnName, valueName);
+        }
+
+        // 返回values对象
+        builder.addStatement("return values");
+        return builder.build();
+    }
+
+    /**
+     * 根据传入的Convert类型，自动判断转对应的数据进行存入值
+     */
+    private MethodSpec setContentValue()
+    {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("setContentValue")
+                .returns(ClassName.VOID)
+                .addModifiers(Modifier.PRIVATE)
+                .addParameter(Global.Convert, "convert")
+                .addParameter(Global.String, "name")
+                .addParameter(ClassName.OBJECT, "value")
+                .addParameter(Global.ContentValues, "values");
+
+        // ToByteConvert
+        builder.addCode("if (convert instanceof $T)", Global.ToByteConvert);
+        builder.addStatement("values.put(name, value == null ? null : ($T) value)", byte.class);
+        // ToLongConvert
+        builder.addCode("if (convert instanceof $T)", Global.ToLongConvert);
+        builder.addStatement("values.put(name, value == null ? null : ($T) value)", long.class);
+        // ToFloatConvert
+        builder.addCode("if (convert instanceof $T)", Global.ToFloatConvert);
+        builder.addStatement("values.put(name, value == null ? null : ($T) value)", float.class);
+        // ToDoubleConvert
+        builder.addCode("if (convert instanceof $T)", Global.ToDoubleConvert);
+        builder.addStatement("values.put(name, value == null ? null : ($T) value)", double.class);
+        // ToShortConvert
+        builder.addCode("if (convert instanceof $T)", Global.ToShortConvert);
+        builder.addStatement("values.put(name, value == null ? null : ($T) value)", short.class);
+        // ToByteArrayConvert
+        builder.addCode("if (convert instanceof $T)", Global.ToByteArrayConvert);
+        builder.addStatement("values.put(name, value == null ? null : ($T) value)", byte[].class);
+        // ToStringConvert
+        builder.addCode("if (convert instanceof $T)", Global.ToStringConvert);
+        builder.addStatement("values.put(name, value == null ? null : ($T) value)", String.class);
+        // ToBooleanConvert
+        builder.addCode("if (convert instanceof $T)", Global.ToBooleanConvert);
+        builder.addStatement("values.put(name, value == null ? null : ($T) value)", boolean.class);
+        // ToIntegerConvert
+        builder.addCode("if (convert instanceof $T)", Global.ToIntegerConvert);
+        builder.addStatement("values.put(name, value == null ? null : ($T) value)", int.class);
+
+        return builder.build();
     }
 }
