@@ -1,7 +1,7 @@
 # RoomLite
 
 #### 介绍
-使用运行时反射实现的基于Android平台下的SQLite数据库ORM
+基于Android平台下的SQLite数据库ORM
 
 #### 获取
 
@@ -15,9 +15,19 @@ allprojects {
 ```
 
 ```gradle
+java:
 dependencies {
-	implementation 'com.github.xiaolei123:RoomLite:Tag'
+    annotationProcessor 'com.github.xiaolei123:compiler:Tag'
+    implementation 'com.github.xiaolei123:runtime:Tag'
 }
+
+kotlin:
+dependencies {
+    kapt 'com.github.xiaolei123:compiler:Tag'
+    implementation 'com.github.xiaolei123:runtime:Tag'
+}
+
+
 ```
 
 [![版本信息](https://www.jitpack.io/v/com.github.xiaolei123/RoomLite.svg)](https://www.jitpack.io/#xiaolei123/RoomLite)
