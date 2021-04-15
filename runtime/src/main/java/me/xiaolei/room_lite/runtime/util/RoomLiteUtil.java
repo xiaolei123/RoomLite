@@ -113,30 +113,8 @@ public class RoomLiteUtil
         }
         return primaryField;
     }
-
-    /**
-     * 获取对应的SQL语句的字段类型
-     */
-    public static Column.SQLType getColumnSQLType(Field field)
-    {
-        Column column = field.getAnnotation(Column.class);
-        if (column == null || Column.SQLType.UNDEFINED.equals(column.type()))
-        {
-            return Converts.convertSqlType(field.getType());
-        } else
-        {
-            return column.type();
-        }
-    }
-
-    /**
-     * 判断字段是否是主键，并且自动递增
-     */
-    public static boolean isPrimaryKeyAndAutoGenerate(Field field)
-    {
-        PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
-        return (isPrimaryKey(field) && primaryKey.autoGenerate());
-    }
+    
+    
 
     /**
      * 判断字段是否是主键
@@ -166,73 +144,7 @@ public class RoomLiteUtil
         }
         return null;
     }
-
-    /**
-     * 根据类型，将一个对象，转换成原生API插入数据时，需要用到的 ContentValues
-     * <p>
-     * 自动忽略自增长的字段
-     *
-     * @param klass
-     * @param obj
-     */
-    public static ContentValues convertContentValue(Class<?> klass, Object obj)
-    {
-        ContentValues values = new ContentValues();
-        // 获取所有的字段
-        List<Field> fields = RoomLiteUtil.getFields(klass);
-        for (Field field : fields)
-        {
-            // 获取对应字段值
-            Object value = RoomLiteUtil.getFieldValue(obj, field);
-            // 获取对应字段名称
-            String columnName = RoomLiteUtil.getColumnName(field);
-            // 获取对应字段的类型
-            Class<?> javaType = field.getType();
-            // 根据字段类型，获取转换器
-            Convert convert = Converts.getConvert(javaType);
-            if (convert == null)
-                throw new RuntimeException(field + "所对应的数据库类型转换器未定义。");
-            // 判断字段的类型是不是数字
-            if (convert.getSqlType() == Column.SQLType.INTEGER)
-            {
-                // 如果是数字，并且标记为主键，并且是自增长的，那么就不添加此字段
-                if (RoomLiteUtil.isPrimaryKeyAndAutoGenerate(field))
-                    continue;
-            }
-            Object result = convert.convertToDataBaseObject(value);
-            // 用转换器的类型，去跟基本支持类型去比对
-            if (convert instanceof ToByteConvert)
-            {
-                values.put(columnName, result == null ? null : (byte) result);
-            } else if (convert instanceof ToLongConvert)
-            {
-                values.put(columnName, result == null ? null : (long) result);
-            } else if (convert instanceof ToFloatConvert)
-            {
-                values.put(columnName, result == null ? null : (float) result);
-            } else if (convert instanceof ToDoubleConvert)
-            {
-                values.put(columnName, result == null ? null : (double) result);
-            } else if (convert instanceof ToShortConvert)
-            {
-                values.put(columnName, result == null ? null : (short) result);
-            } else if (convert instanceof ToByteArrayConvert)
-            {
-                values.put(columnName, result == null ? null : (byte[]) result);
-            } else if (convert instanceof ToStringConvert)
-            {
-                values.put(columnName, result == null ? null : (String) result);
-            } else if (convert instanceof ToBooleanConvert)
-            {
-                values.put(columnName, result == null ? null : (boolean) result);
-            } else if (convert instanceof ToIntegerConvert)
-            {
-                values.put(columnName, result == null ? null : (int) result);
-            }
-        }
-        return values;
-    }
-
+    
     /**
      * 根据类型，获取默认值
      *

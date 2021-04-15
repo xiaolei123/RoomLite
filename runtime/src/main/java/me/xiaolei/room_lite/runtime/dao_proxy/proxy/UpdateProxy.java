@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.runtime.dao_proxy.DaoProxy;
 import me.xiaolei.room_lite.runtime.sqlite.LiteDataBase;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
@@ -60,10 +61,11 @@ public class UpdateProxy extends DaoProxy
         {
             // 获取更新组的类型
             Class<?> klass = entry.getKey();
+            EntityHelper helper = liteDatabase.getEntityHelper(klass);
             // 获取要更新的对象合集
             List<Object> updateObjs = entry.getValue();
             // 获取类当前的表名
-            String tableName = liteDatabase.getEntityHelper(klass).getTableName();
+            String tableName = helper.getTableName();
             // 获取所有的主键字段
             List<Field> keyFields = RoomLiteUtil.getPrimaryKeyField(klass);
             // 生成更新条件
@@ -93,7 +95,7 @@ public class UpdateProxy extends DaoProxy
                 }
                 whereArgss.add(values);
                 // 获取这个对象转换成的ContentValues
-                contentValues.add(RoomLiteUtil.convertContentValue(klass, updateObj));
+                contentValues.add(helper.toContentValues(updateObj));
             }
 
             AtomicInteger count = new AtomicInteger(0);

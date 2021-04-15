@@ -11,10 +11,10 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.runtime.dao_proxy.DaoProxy;
 import me.xiaolei.room_lite.runtime.sqlite.LiteDataBase;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
-import me.xiaolei.room_lite.runtime.util.RoomLiteUtil;
 
 /**
  * 新增的代理类
@@ -22,7 +22,7 @@ import me.xiaolei.room_lite.runtime.util.RoomLiteUtil;
 public class InsertProxy extends DaoProxy
 {
     private final List<Class<?>> entities = new CopyOnWriteArrayList<>(liteDatabase.getEntities());
-    
+
     public InsertProxy(RoomLiteDatabase liteDatabase, LiteDataBase database)
     {
         super(liteDatabase, database);
@@ -63,16 +63,17 @@ public class InsertProxy extends DaoProxy
         {
             // 获取插入组的类型
             Class<?> klass = entry.getKey();
+            EntityHelper helper = liteDatabase.getEntityHelper(klass);
             // 获取要插入的对象合集
             List<Object> insertObjs = entry.getValue();
             // 把对象转换成ContentValues
             List<ContentValues> contentValues = new LinkedList<>();
             for (Object obj : insertObjs)
             {
-                contentValues.add(RoomLiteUtil.convertContentValue(klass, obj));
+                contentValues.add(helper.toContentValues(obj));
             }
             // 获取类当前的表名
-            String tableName = liteDatabase.getEntityHelper(klass).getTableName();
+            String tableName = helper.getTableName();
 
             AtomicInteger count = new AtomicInteger();
             database.doTransaction((transaction) ->
