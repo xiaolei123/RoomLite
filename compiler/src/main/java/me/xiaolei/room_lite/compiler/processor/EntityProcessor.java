@@ -177,8 +177,11 @@ public class EntityProcessor extends BaseProcessor
         for (int i = 0; i < fields.size(); i++)
         {
             VariableElement field = fields.get(i);
+            // 当前字段对应的Java类型
             String fieldType = field.asType().toString();
+            // 获取当前的字段的对应的Column
             Column column = field.getAnnotation(Column.class);
+            // 获取数据库字段的名称
             String columnName = ElementUtil.getColumnName(field);
             // 生成Column.SQLType 字段的名称
             String sqlTypeName = columnName + "$$sqlType";
