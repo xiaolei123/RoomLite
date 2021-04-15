@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import me.xiaolei.room_lite.annotations.Column;
-import me.xiaolei.room_lite.annotations.Entity;
 import me.xiaolei.room_lite.annotations.Ignore;
 import me.xiaolei.room_lite.annotations.PrimaryKey;
 import me.xiaolei.room_lite.runtime.coverts.Convert;
@@ -28,38 +27,6 @@ import me.xiaolei.room_lite.runtime.coverts.base.ToStringConvert;
 
 public class RoomLiteUtil
 {
-    /**
-     * 建表工具
-     */
-    public static final CreateSqlUtil Create = new CreateSqlUtil();
-    // 缓存表名
-    private final static Map<Class<?>, String> tableNameMapper = new ConcurrentHashMap<>();
-
-    /**
-     * 获取 @Entity 的表名称<br/>
-     * 会优先去缓存里取名字，如果缓存里没有，则临时反射获取。<br/>
-     * <br/>
-     *
-     * @param klass
-     * @return
-     */
-    public static String getTableName(Class<?> klass)
-    {
-        String tableName = tableNameMapper.get(klass);
-        if (tableName == null)
-        {
-            Entity entity = klass.getAnnotation(Entity.class);
-            if (entity == null)
-            {
-                return null;
-            }
-            tableName = entity.name();
-            tableName = (tableName.isEmpty()) ? klass.getSimpleName() : tableName;
-            tableNameMapper.put(klass, tableName);
-        }
-        return tableName;
-    }
-
     // 缓存字段名称
     private final static Map<Field, String> columnNameMapper = new ConcurrentHashMap<>();
 

@@ -23,7 +23,8 @@ public class User
     public int id;
 
     public String name = "当前时间:" + System.currentTimeMillis();
-
+    
+    @Column(name = "x_short")
     public short x_short;
     public byte x_byte;
     public double x_double;

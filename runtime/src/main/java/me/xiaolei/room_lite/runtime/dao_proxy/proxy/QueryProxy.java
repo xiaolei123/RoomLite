@@ -9,6 +9,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 
+import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.runtime.adapters.Adapters;
 import me.xiaolei.room_lite.runtime.adapters.ContainerAdapter;
 import me.xiaolei.room_lite.annotations.dao.Query;
@@ -17,7 +18,6 @@ import me.xiaolei.room_lite.runtime.coverts.Converts;
 import me.xiaolei.room_lite.runtime.dao_proxy.DaoProxy;
 import me.xiaolei.room_lite.runtime.sqlite.LiteDataBase;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
-import me.xiaolei.room_lite.runtime.util.QueryUtil;
 import me.xiaolei.room_lite.runtime.util.RoomLiteUtil;
 
 public class QueryProxy extends DaoProxy
@@ -43,7 +43,7 @@ public class QueryProxy extends DaoProxy
         // SQL语句的构建
         StringBuilder querySQLBuilder = new StringBuilder();
         // 获取表名
-        String tableName = RoomLiteUtil.getTableName(tableKlass);
+        String tableName = liteDatabase.getEntityHelper(tableKlass).getTableName();
         // 查询什么
         String what = query.what();
         // 查询条件是什么
@@ -84,11 +84,21 @@ public class QueryProxy extends DaoProxy
         {
             try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
             {
+                String[] columnNames = cursor.getColumnNames();
                 if (!checkSupportSingle(cursor, returnType))
                     throw new RuntimeException(returnType + " 返回类型的参数和查询出来的数据不匹配");
                 if (cursor.moveToNext())
-                    return QueryUtil.parseObject(cursor, returnType);
-                else
+                {
+                    if (convert != null)
+                    {
+                        int columnIndex = cursor.getColumnIndex(columnNames[0]);
+                        return convert.cursorToJavaObject(cursor, columnIndex);
+                    } else
+                    {
+                        EntityHelper helper = liteDatabase.getEntityHelper(returnType);
+                        return helper.fromCursor(cursor);
+                    }
+                } else
                     return RoomLiteUtil.defaultValue(returnType);
             } catch (Exception e)
             {
@@ -103,12 +113,22 @@ public class QueryProxy extends DaoProxy
 
             try (Cursor cursor = database.rawQuery(querySQLBuilder.toString(), whereArgs))
             {
+                String[] columnNames = cursor.getColumnNames();
                 if (!checkSupportSingle(cursor, comType))
                     throw new RuntimeException(comType + "[] 返回类型的参数和查询出来的数据不匹配");
                 Object[] array = (Object[]) Array.newInstance(comType, cursor.getCount());
+                convert = Converts.getConvert(comType);
                 while (cursor.moveToNext())
                 {
-                    array[cursor.getPosition()] = QueryUtil.parseObject(cursor, comType);
+                    if (convert != null)
+                    {
+                        int columnIndex = cursor.getColumnIndex(columnNames[0]);
+                        array[cursor.getPosition()] = convert.cursorToJavaObject(cursor, columnIndex);
+                    } else
+                    {
+                        EntityHelper helper = liteDatabase.getEntityHelper(comType);
+                        array[cursor.getPosition()] = helper.fromCursor(cursor);
+                    }
                 }
                 return array;
             } catch (Exception e)
@@ -121,7 +141,7 @@ public class QueryProxy extends DaoProxy
             if (adapter == null)
                 throw new RuntimeException(returnType + " 类型不受支持");
             Type genericType = getGenericType(method);
-            return adapter.newInstance(database, genericType, querySQLBuilder.toString(), whereArgs);
+            return adapter.newInstance(liteDatabase, database, genericType, querySQLBuilder.toString(), whereArgs);
         }
     }
 

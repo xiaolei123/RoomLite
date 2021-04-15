@@ -8,7 +8,6 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -23,7 +22,6 @@ import javax.lang.model.type.TypeMirror;
 import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.annotations.Column;
 import me.xiaolei.room_lite.annotations.Entity;
-import me.xiaolei.room_lite.annotations.Ignore;
 import me.xiaolei.room_lite.compiler.Global;
 import me.xiaolei.room_lite.compiler.base.BaseProcessor;
 import me.xiaolei.room_lite.compiler.utils.ElementUtil;
@@ -79,6 +77,7 @@ public class EntityProcessor extends BaseProcessor
         // 新建辅助类
         TypeSpec.Builder helperClass = TypeSpec.classBuilder(helperKlassName)
                 .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Global.Keep)
                 .addSuperinterface(ClassName.get(EntityHelper.class));
         // 构造函数
         MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
@@ -107,7 +106,6 @@ public class EntityProcessor extends BaseProcessor
         logger.info("packageName ->" + packageName);
         logger.info("klassName ->" + klassName);
     }
-
 
     /**
      * 对字段进行解析，并且生成对应的解析器的字段
@@ -192,7 +190,7 @@ public class EntityProcessor extends BaseProcessor
             if (column != null && column.type() != Column.SQLType.UNDEFINED)
             {
                 // 生成代码，获取当前的SQLType的值，并生成进去
-                builder.addStatement("$T $N = Column.SQLType.valueOf($S)", Column.SQLType.class, sqlTypeName, column.type());
+                builder.addStatement("$T $N = Column.SQLType.$N", Column.SQLType.class, sqlTypeName, column.type().name());
             } else
             {
                 // 生成代码，获取当前的字段类型，从Converts里获取对应的 SQLType 

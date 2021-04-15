@@ -19,7 +19,7 @@ import me.xiaolei.room_lite.runtime.util.RoomLiteUtil;
 public class UpdateProxy extends DaoProxy
 {
     private final List<Class<?>> entities = new CopyOnWriteArrayList<>(liteDatabase.getEntities());
-    
+
     public UpdateProxy(RoomLiteDatabase liteDatabase, LiteDataBase database)
     {
         super(liteDatabase, database);
@@ -63,7 +63,7 @@ public class UpdateProxy extends DaoProxy
             // 获取要更新的对象合集
             List<Object> updateObjs = entry.getValue();
             // 获取类当前的表名
-            String tableName = RoomLiteUtil.getTableName(klass);
+            String tableName = liteDatabase.getEntityHelper(klass).getTableName();
             // 获取所有的主键字段
             List<Field> keyFields = RoomLiteUtil.getPrimaryKeyField(klass);
             // 生成更新条件

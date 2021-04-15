@@ -3,6 +3,7 @@ package me.xiaolei.room_lite.runtime.adapters;
 import java.lang.reflect.Type;
 
 import me.xiaolei.room_lite.runtime.sqlite.LiteDataBase;
+import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
 
 /**
  * 执行函数的返回值适配器，<br/>
@@ -24,5 +25,5 @@ public abstract class ContainerAdapter<T>
         return this.klass;
     }
 
-    public abstract T newInstance(LiteDataBase database, Type genericType, String sql, String[] args);
+    public abstract T newInstance(RoomLiteDatabase liteDatabase,LiteDataBase database, Type genericType, String sql, String[] args);
 }

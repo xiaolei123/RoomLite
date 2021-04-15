@@ -12,5 +12,6 @@ public class Global
     public static ClassName String = ClassName.get(java.lang.String.class);
     // 转换器的类集合操作类
     public static ClassName Converts = ClassName.get("me.xiaolei.room_lite.runtime.coverts", "Converts");
-
+    // Keep注解
+    public static ClassName Keep = ClassName.get("androidx.annotation", "Keep");
 }

@@ -72,7 +72,7 @@ public class InsertProxy extends DaoProxy
                 contentValues.add(RoomLiteUtil.convertContentValue(klass, obj));
             }
             // 获取类当前的表名
-            String tableName = RoomLiteUtil.getTableName(klass);
+            String tableName = liteDatabase.getEntityHelper(klass).getTableName();
 
             AtomicInteger count = new AtomicInteger();
             database.doTransaction((transaction) ->

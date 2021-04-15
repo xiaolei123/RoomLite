@@ -9,12 +9,14 @@ import androidx.annotation.Nullable;
 
 import java.io.File;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.annotations.dao.Dao;
 import me.xiaolei.room_lite.runtime.dao_proxy.handler.DaoProxyHandler;
-import me.xiaolei.room_lite.runtime.util.RoomLiteUtil;
 
 public abstract class RoomLiteDatabase
 {
@@ -25,6 +27,7 @@ public abstract class RoomLiteDatabase
     private final File dbDir;
     private final Map<Class<?>, Object> daoCache = new ConcurrentHashMap<>();
     private final LiteDataBase database;
+    private final Map<Class<?>, EntityHelper> helperCache = new HashMap<>();
 
     /**
      * 初始化数据库，
@@ -34,6 +37,23 @@ public abstract class RoomLiteDatabase
     public RoomLiteDatabase(String dbName)
     {
         this(dbName, InitProvider.context.getDir("databases", Context.MODE_PRIVATE));
+        Class<?>[] entities = this.getEntities();
+        if (entities == null || entities.length == 0)
+            throw new RuntimeException(this.getClass().getCanonicalName() + "的 getEntities() 函数返回的Entities不可以为空");
+        for (Class<?> entityKlass : entities)
+        {
+            String klassName = entityKlass.getSimpleName();
+            String packageName = Objects.requireNonNull(entityKlass.getPackage()).getName();
+            String helperName = packageName + "." + klassName + "$$EntityHelper";
+            try
+            {
+                Class<? extends EntityHelper> helperClass = (Class<? extends EntityHelper>) Class.forName(helperName);
+                helperCache.put(entityKlass, helperClass.newInstance());
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     /**
@@ -76,7 +96,9 @@ public abstract class RoomLiteDatabase
         Class<?>[] entities = this.getEntities();
         for (Class<?> entity : entities)
         {
-            String sql = RoomLiteUtil.Create.convertCreateSql(entity);
+            EntityHelper helper = this.helperCache.get(entity);
+            assert helper != null;
+            String sql = helper.getCreateSQL();
             Log.e("RoomLite", "create:" + sql);
             db.execSQL(sql);
         }
@@ -114,7 +136,6 @@ public abstract class RoomLiteDatabase
      * <br/>
      * true : 允许在主线程中执行<br/>
      * false : 不允许在主线程中执行
-     * 
      */
     public boolean allowRunOnUIThread()
     {
@@ -146,4 +167,13 @@ public abstract class RoomLiteDatabase
         }
         return dao;
     }
+
+    /**
+     * 根据Entity获取对应的帮助类
+     */
+    public EntityHelper getEntityHelper(Class<?> klass)
+    {
+        return this.helperCache.get(klass);
+    }
+
 }

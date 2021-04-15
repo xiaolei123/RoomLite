@@ -63,7 +63,7 @@ public class DeleteProxy extends DaoProxy
             // 获取要删除的对象合集
             List<Object> deleteObjs = entry.getValue();
             // 获取类当前的表名
-            String tableName = RoomLiteUtil.getTableName(klass);
+            String tableName = liteDatabase.getEntityHelper(klass).getTableName();
             // 获取所有的主键字段
             List<Field> keyFields = RoomLiteUtil.getPrimaryKeyField(klass);
             // 生成删除条件

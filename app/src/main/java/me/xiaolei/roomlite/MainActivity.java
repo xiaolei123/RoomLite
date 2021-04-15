@@ -31,7 +31,6 @@ public class MainActivity extends AppCompatActivity
         //         .allowMainThreadQueries()
         //         .build();
         // PeopleDao peopleDao = db.peopleDao();
-
         text.setOnClickListener(v ->
         {
             roomLite(userDao);
