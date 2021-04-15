@@ -142,13 +142,7 @@ public class EntityProcessor extends BaseProcessor
      */
     private MethodSpec getTableName(Element element)
     {
-        String klassName = element.getSimpleName().toString();
-        Entity entity = element.getAnnotation(Entity.class);
-        String tableName = entity.name();
-        if (tableName.isEmpty())
-        {
-            tableName = klassName;
-        }
+        String tableName = ElementUtil.getTableName(element);
         return MethodSpec.methodBuilder("getTableName")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
@@ -163,14 +157,53 @@ public class EntityProcessor extends BaseProcessor
      * @param element
      * @return
      */
-    private MethodSpec getCreateSQL(Element element)
+    private MethodSpec getCreateSQL(Element element) throws Exception
     {
-        return MethodSpec.methodBuilder("getCreateSQL")
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("getCreateSQL")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
-                .addStatement("return $S", "")
-                .returns(Global.String)
-                .build();
+                .returns(Global.String);
+        // 获取所有字段
+        List<VariableElement> fields = ElementUtil.getFields(element);
+        // 获取表名
+        String tableName = ElementUtil.getTableName(element);
+        // 判断是否有主键
+        if (!ElementUtil.hasPrimaryKey(fields))
+            throw new Exception(element + " 必须含有至少一个主键 @PrimaryKey 使用");
+        // 构建语句
+        builder.addStatement("$T sql = $S", String.class, "CREATE TABLE IF NOT EXISTS ");
+        builder.addStatement("sql += $S", tableName);
+        builder.addStatement("sql += $S", "(");
+        for (int i = 0; i < fields.size(); i++)
+        {
+            VariableElement field = fields.get(i);
+            String fieldType = field.asType().toString();
+            Column column = field.getAnnotation(Column.class);
+            String columnName = ElementUtil.getColumnName(field);
+            // 生成Column.SQLType 字段的名称
+            String sqlTypeName = columnName + "$$sqlType";
+            // 防止字段冲突，对字段使用 `` 进行包裹
+            String columnNameBox = "`" + columnName + "` ";
+            // 根据当前下标，决定结尾部分是否有逗号分割
+            String endStatement = (i < fields.size() - 1) ? "," : "";
+            if (column != null && column.type() != Column.SQLType.UNDEFINED)
+            {
+                // 生成代码，获取当前的SQLType的值，并生成进去
+                builder.addStatement("$T $N = Column.SQLType.valueOf($S)", Column.SQLType.class, sqlTypeName, column.type());
+            } else
+            {
+                // 生成代码，获取当前的字段类型，从Converts里获取对应的 SQLType 
+                builder.addStatement("$T $N = Converts.convertSqlType($N.class)", Column.SQLType.class, sqlTypeName, fieldType);
+            }
+            // 根据当前字段，获取字段的其他语句标签
+            String tag = ElementUtil.getColumnTag(field);
+            // SQL语句添加
+            builder.addStatement("sql += $S + $N.getTypeString() + $S + $S", columnNameBox, sqlTypeName, tag, endStatement);
+        }
+        // sqlBuilder.append(")");
+        builder.addStatement("sql += $S", ")");
+        builder.addStatement("return sql");
+        return builder.build();
     }
 
 

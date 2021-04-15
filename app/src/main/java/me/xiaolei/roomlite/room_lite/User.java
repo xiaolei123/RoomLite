@@ -18,7 +18,7 @@ public class User
         this.id = id;
     }
 
-    @Column
+    @Column(type = Column.SQLType.INTEGER)
     @PrimaryKey(autoGenerate = true)
     public int id;
 
