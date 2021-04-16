@@ -1,7 +1,5 @@
 package me.xiaolei.room_lite.runtime.util;
 
-import android.content.ContentValues;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -13,17 +11,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import me.xiaolei.room_lite.annotations.Column;
 import me.xiaolei.room_lite.annotations.Ignore;
 import me.xiaolei.room_lite.annotations.PrimaryKey;
-import me.xiaolei.room_lite.runtime.coverts.Convert;
-import me.xiaolei.room_lite.runtime.coverts.Converts;
-import me.xiaolei.room_lite.runtime.coverts.base.ToBooleanConvert;
-import me.xiaolei.room_lite.runtime.coverts.base.ToByteArrayConvert;
-import me.xiaolei.room_lite.runtime.coverts.base.ToByteConvert;
-import me.xiaolei.room_lite.runtime.coverts.base.ToDoubleConvert;
-import me.xiaolei.room_lite.runtime.coverts.base.ToFloatConvert;
-import me.xiaolei.room_lite.runtime.coverts.base.ToIntegerConvert;
-import me.xiaolei.room_lite.runtime.coverts.base.ToLongConvert;
-import me.xiaolei.room_lite.runtime.coverts.base.ToShortConvert;
-import me.xiaolei.room_lite.runtime.coverts.base.ToStringConvert;
 
 public class RoomLiteUtil
 {

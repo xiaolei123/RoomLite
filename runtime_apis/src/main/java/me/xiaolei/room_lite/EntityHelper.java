@@ -29,8 +29,12 @@ public interface EntityHelper
     public ContentValues toContentValues(Object object);
 
     /**
-     * 获取表的所有的主键名称
+     * 删除数据库的数据
      */
-    public String[] getKeyNames();
-    
+    public int delete(SQLiteWriter sqLite, Object obj) throws Exception;
+
+    /**
+     * 更新数据库的数据
+     */
+    public int update(SQLiteWriter sqLite, Object obj) throws Exception;
 }
