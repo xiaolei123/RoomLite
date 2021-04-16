@@ -5,29 +5,21 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
-import java.util.StringJoiner;
 
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import me.xiaolei.room_lite.EntityHelper;
-import me.xiaolei.room_lite.annotations.Column;
 import me.xiaolei.room_lite.annotations.Entity;
-import me.xiaolei.room_lite.annotations.PrimaryKey;
 import me.xiaolei.room_lite.compiler.Global;
 import me.xiaolei.room_lite.compiler.base.BaseProcessor;
-import me.xiaolei.room_lite.compiler.utils.ElementUtil;
 import me.xiaolei.room_lite.compiler.utils.EntityHelperUtils;
 
 /**
