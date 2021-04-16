@@ -8,8 +8,10 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -95,6 +97,8 @@ public class EntityProcessor extends BaseProcessor
         MethodSpec toContentValues = this.toContentValues(element);
         // 生成自动判断并且存入值
         MethodSpec setContentValue = this.setContentValue();
+        // 获取主键数组名称数组
+        MethodSpec getKeyNames = this.getKeyNames(element);
 
         // 把方法添加到类里
         helperClass.addMethod(constructor.build());
@@ -103,6 +107,7 @@ public class EntityProcessor extends BaseProcessor
         helperClass.addMethod(newInstance);
         helperClass.addMethod(toContentValues);
         helperClass.addMethod(setContentValue);
+        helperClass.addMethod(getKeyNames);
         for (FieldSpec fieldSpec : fieldSpecs)
         {
             helperClass.addField(fieldSpec);
@@ -343,6 +348,50 @@ public class EntityProcessor extends BaseProcessor
         // ToIntegerConvert
         builder.addCode("if (convert instanceof $T)", Global.ToIntegerConvert);
         builder.addStatement("values.put(name, value == null ? null : ($T) value)", int.class);
+
+        return builder.build();
+    }
+
+    /**
+     * 获取主键数组名称数组
+     */
+    private MethodSpec getKeyNames(Element element)
+    {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("getKeyNames")
+                .returns(String[].class)
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class);
+
+        // 获取所有的字段
+        List<VariableElement> fields = ElementUtil.getFields(element);
+        // 定义容器，存放主键字段
+        List<VariableElement> keyFields = new LinkedList<>();
+        // 过滤主键字段
+        for (VariableElement field : fields)
+        {
+            if (ElementUtil.isPrimaryKey(field))
+            {
+                keyFields.add(field);
+            }
+        }
+        // 字符串占位符拼接
+        StringJoiner joiner = new StringJoiner(",");
+        // 对应的占位符的数据
+        Object[] values = new Object[keyFields.size() + 1];
+        // 第一个占位符是代表类型为字符串类型
+        values[0] = String.class;
+        for (int i = 0; i < keyFields.size(); i++)
+        {
+            VariableElement field = keyFields.get(i);
+            // 获取字段的数据库字段名称
+            String columnName = ElementUtil.getColumnName(field);
+            // 保存数据库字段名称
+            values[i + 1] = columnName;
+            // 拼接占位符
+            joiner.add("$S");
+        }
+
+        builder.addStatement("return new $T[]{" + joiner + "}", values);
 
         return builder.build();
     }

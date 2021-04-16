@@ -27,5 +27,4 @@ public class LiteDataBase extends SQLiteDatabaseWrapper
     {
         liteDatabase.onUpgrade(db, oldVersion, newVersion);
     }
-
 }
