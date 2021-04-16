@@ -7,10 +7,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import me.xiaolei.room_lite.EntityHelper;
+import me.xiaolei.room_lite.SQLiteReader;
 import me.xiaolei.room_lite.runtime.adapters.ContainerAdapter;
 import me.xiaolei.room_lite.runtime.coverts.Convert;
 import me.xiaolei.room_lite.runtime.coverts.Converts;
-import me.xiaolei.room_lite.runtime.sqlite.LiteDataBase;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
 
 /**
@@ -24,7 +24,7 @@ public class ListAdapter extends ContainerAdapter<List>
     }
 
     @Override
-    public List<?> newInstance(RoomLiteDatabase liteDatabase, LiteDataBase database, Type genericType, String sql, String[] args)
+    public List<?> newInstance(RoomLiteDatabase liteDatabase, SQLiteReader database, Type genericType, String sql, String[] args)
     {
         if (!(genericType instanceof Class))
             throw new RuntimeException("List的泛型必须是一个准确的可解析的类型");
