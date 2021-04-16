@@ -4,12 +4,12 @@ import android.content.ContentValues;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
-import me.xiaolei.room_lite.SQLiteTransaction;
+import me.xiaolei.room_lite.SQLiteWriter;
 
 /**
  * 事务，因为后续所有的有关于写的操作，都需要通过这个类完成
  */
-public class Transaction implements SQLiteTransaction
+public class Transaction implements SQLiteWriter
 {
     // 真实操作的数据库
     private final SQLiteDatabase database;

@@ -10,14 +10,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-import me.xiaolei.room_lite.SQLiteWrapper;
-import me.xiaolei.room_lite.TransactionRunnable;
+import me.xiaolei.room_lite.SQLiteReader;
+import me.xiaolei.room_lite.WriterRunnable;
 import me.xiaolei.room_lite.runtime.util.ThreadPoolFactory;
 
 /**
  * 数据库操作类的包装类，主要致力于解决多线程并发读写的问题
  */
-public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements Closeable, SQLiteWrapper
+public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements Closeable, SQLiteReader
 {
     private SQLiteDatabase readableDataBase;
     private SQLiteDatabase writableDataBase;
@@ -34,7 +34,7 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
     }
 
     @Override
-    public void doTransaction(TransactionRunnable runnable)
+    public void doTransaction(WriterRunnable runnable)
     {
         postWait(writeExecutor, (database) ->
         {

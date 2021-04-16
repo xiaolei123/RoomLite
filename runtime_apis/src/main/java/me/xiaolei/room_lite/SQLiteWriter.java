@@ -3,7 +3,7 @@ package me.xiaolei.room_lite;
 import android.content.ContentValues;
 import android.database.SQLException;
 
-public interface SQLiteTransaction
+public interface SQLiteWriter
 {
     public void execSQL(String sql) throws SQLException;
 

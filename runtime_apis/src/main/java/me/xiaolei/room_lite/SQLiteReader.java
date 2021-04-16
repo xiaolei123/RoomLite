@@ -2,7 +2,7 @@ package me.xiaolei.room_lite;
 
 import android.database.Cursor;
 
-public interface SQLiteWrapper
+public interface SQLiteReader
 {
     public Cursor rawQuery(String sql, String[] selectionArgs);
 
@@ -10,5 +10,5 @@ public interface SQLiteWrapper
 
     public void setVersion(int version);
 
-    public void doTransaction(TransactionRunnable runnable);
+    public void doTransaction(WriterRunnable runnable);
 }

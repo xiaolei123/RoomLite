@@ -2,7 +2,8 @@ package me.xiaolei.room_lite.runtime.adapters;
 
 import java.lang.reflect.Type;
 
-import me.xiaolei.room_lite.runtime.sqlite.LiteDataBase;
+
+import me.xiaolei.room_lite.SQLiteReader;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
 
 /**
@@ -25,5 +26,5 @@ public abstract class ContainerAdapter<T>
         return this.klass;
     }
 
-    public abstract T newInstance(RoomLiteDatabase liteDatabase,LiteDataBase database, Type genericType, String sql, String[] args);
+    public abstract T newInstance(RoomLiteDatabase liteDatabase, SQLiteReader database, Type genericType, String sql, String[] args);
 }
