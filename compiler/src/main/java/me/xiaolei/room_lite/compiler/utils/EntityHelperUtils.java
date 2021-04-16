@@ -9,13 +9,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringJoiner;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import me.xiaolei.room_lite.SQLiteWriter;
 import me.xiaolei.room_lite.annotations.Column;
+import me.xiaolei.room_lite.annotations.Entity;
 import me.xiaolei.room_lite.annotations.PrimaryKey;
 import me.xiaolei.room_lite.compiler.Global;
 
@@ -26,9 +26,27 @@ public class EntityHelperUtils
 {
 
     /**
+     * 检查表是否合法
+     */
+    public static void checkEntityLegitimate(TypeElement element) throws Exception
+    {
+        String type = element.asType().toString();
+        Entity entity = element.getAnnotation(Entity.class);
+        if (entity == null)
+        {
+            throw new Exception(type + "必须使用@" + Entity.class.getComponentType() + "进行注解");
+        }
+        List<VariableElement> allFields = ElementUtil.getFields(element);
+        if (!ElementUtil.hasPrimaryKey(allFields))
+        {
+            throw new Exception(type + "必须至少有一个主键@" + PrimaryKey.class);
+        }
+    }
+
+    /**
      * 获取主键数组名称数组
      */
-    public static FieldSpec keyNames(Element element)
+    public static FieldSpec keyNames(TypeElement element)
     {
         FieldSpec.Builder builder = FieldSpec.builder(String[].class, "keyNames")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
@@ -69,7 +87,7 @@ public class EntityHelperUtils
     /**
      * 对字段进行解析，并且生成对应的解析器的字段
      */
-    public static FieldSpec[] convertAndConstructor(MethodSpec.Builder constructor, Element element)
+    public static FieldSpec[] convertAndConstructor(MethodSpec.Builder constructor, TypeElement element)
     {
         List<VariableElement> fields = ElementUtil.getFields(element);
         // 为每一个字段，自动映射一个对应的Convert
@@ -97,7 +115,7 @@ public class EntityHelperUtils
      * @param element
      * @return
      */
-    public static MethodSpec getTableName(Element element)
+    public static MethodSpec getTableName(TypeElement element)
     {
         String tableName = ElementUtil.getTableName(element);
         return MethodSpec.methodBuilder("getTableName")
@@ -114,7 +132,7 @@ public class EntityHelperUtils
      * @param element
      * @return
      */
-    public static MethodSpec getCreateSQL(Element element) throws Exception
+    public static MethodSpec getCreateSQL(TypeElement element)
     {
         MethodSpec.Builder builder = MethodSpec.methodBuilder("getCreateSQL")
                 .addModifiers(Modifier.PUBLIC)
@@ -124,9 +142,6 @@ public class EntityHelperUtils
         List<VariableElement> fields = ElementUtil.getFields(element);
         // 获取表名
         String tableName = ElementUtil.getTableName(element);
-        // 判断是否有主键
-        if (!ElementUtil.hasPrimaryKey(fields))
-            throw new Exception(element + " 必须含有至少一个主键 @PrimaryKey 使用");
         // 构建语句
         builder.addStatement("$T sql = $S", String.class, "CREATE TABLE IF NOT EXISTS ");
         builder.addStatement("sql += $S", tableName);
@@ -169,7 +184,7 @@ public class EntityHelperUtils
     /**
      * 创建生成对象的
      */
-    public static MethodSpec fromCursor(Element element)
+    public static MethodSpec fromCursor(TypeElement element)
     {
         TypeElement typeElement = ((TypeElement) element);
         // 获取所有的字段
@@ -207,7 +222,7 @@ public class EntityHelperUtils
     /**
      * 将对象转换成 ContentValues的
      */
-    public static MethodSpec toContentValues(Element element)
+    public static MethodSpec toContentValues(TypeElement element)
     {
         String type = element.asType().toString();
         List<VariableElement> fields = ElementUtil.getFields(element);
@@ -300,7 +315,7 @@ public class EntityHelperUtils
     /**
      * 删除记录
      */
-    public static MethodSpec delete(Element element)
+    public static MethodSpec delete(TypeElement element)
     {
         MethodSpec.Builder builder = MethodSpec.methodBuilder("delete")
                 .returns(int.class)
@@ -347,7 +362,7 @@ public class EntityHelperUtils
     /**
      * 更新记录
      */
-    public static MethodSpec update(Element element)
+    public static MethodSpec update(TypeElement element)
     {
         MethodSpec.Builder builder = MethodSpec.methodBuilder("update")
                 .returns(int.class)

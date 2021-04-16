@@ -47,7 +47,7 @@ public class EntityProcessor extends BaseProcessor
             Set<? extends Element> elements = environment.getElementsAnnotatedWith(Entity.class);
             for (Element element : elements)
             {
-                this.compiler(element);
+                this.compiler((TypeElement) element);
             }
         } catch (Exception e)
         {
@@ -59,11 +59,12 @@ public class EntityProcessor extends BaseProcessor
         return true;
     }
 
-    private void compiler(Element element) throws Exception
+    private void compiler(TypeElement element) throws Exception
     {
-        TypeMirror tm = element.asType();
-        Entity entity = element.getAnnotation(Entity.class);
-        logger.info(tm.toString() + "->" + entity);
+        // 首先检查Entity的合法性
+        EntityHelperUtils.checkEntityLegitimate(element);
+        // 日志里打印所有的Entity记录
+        logger.info(element.asType().toString());
         // 获取类所在的包名
         String packageName = elementUtil.getPackageOf(element).asType().toString();
         // 获取类名
@@ -114,8 +115,5 @@ public class EntityProcessor extends BaseProcessor
         }
         JavaFile javaFile = JavaFile.builder(packageName, helperClass.build()).build();
         javaFile.writeTo(filer);
-
-        logger.info("packageName ->" + packageName);
-        logger.info("klassName ->" + klassName);
     }
 }
