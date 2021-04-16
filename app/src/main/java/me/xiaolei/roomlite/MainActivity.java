@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity
         System.out.println("耗时：getFirst-" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
         dao.queryAll();
         System.out.println("耗时：queryAll-" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
-        dao.query();
+        
         System.out.println("耗时：query-" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));
         dao.queryCount();
         System.out.println("耗时：queryCount-" + (System.currentTimeMillis() - last_time) + "->" + ((last_time = System.currentTimeMillis()) != 0));

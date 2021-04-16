@@ -1,7 +1,5 @@
 package me.xiaolei.room_lite.runtime.dao_proxy.proxy;
 
-
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -10,10 +8,10 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.runtime.dao_proxy.DaoProxy;
 import me.xiaolei.room_lite.runtime.sqlite.LiteDataBase;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
-import me.xiaolei.room_lite.runtime.util.RoomLiteUtil;
 
 public class DeleteProxy extends DaoProxy
 {
@@ -60,46 +58,17 @@ public class DeleteProxy extends DaoProxy
         {
             // 获取删除组的类型
             Class<?> klass = entry.getKey();
+            EntityHelper helper = liteDatabase.getEntityHelper(klass);
             // 获取要删除的对象合集
             List<Object> deleteObjs = entry.getValue();
-            // 获取类当前的表名
-            String tableName = liteDatabase.getEntityHelper(klass).getTableName();
-            // 获取所有的主键字段
-            List<Field> keyFields = RoomLiteUtil.getPrimaryKeyField(klass);
-            // 生成删除条件
-            StringBuilder whereClause = new StringBuilder();
-            for (int i = 0; i < keyFields.size(); i++)
-            {
-                Field keyField = keyFields.get(i);
-                // 获取表字段名
-                String columnName = RoomLiteUtil.getColumnName(keyField);
-                whereClause.append(columnName).append("=?");
-                if (i < keyFields.size() - 1)
-                {
-                    whereClause.append(" AND");
-                }
-            }
-            // 获取所有对象的whereClause的值
-            List<String[]> whereArgss = new LinkedList<>();
-            for (Object deleteObj : deleteObjs)
-            {
-                String[] values = new String[keyFields.size()];
-                for (int i = 0; i < keyFields.size(); i++)
-                {
-                    Field keyField = keyFields.get(i);
-                    // 获取某个主键字段的值，并生成字符串
-                    values[i] = String.valueOf(RoomLiteUtil.getFieldValue(deleteObj, keyField));
-                }
-                whereArgss.add(values);
-            }
+
 
             AtomicInteger count = new AtomicInteger(0);
             database.doTransaction(transaction ->
             {
-                for (String[] whereArgs : whereArgss)
+                for (Object deleteObj : deleteObjs)
                 {
-                    int changeRow = transaction.delete(tableName, whereClause.toString(), whereArgs);
-                    count.addAndGet(changeRow);
+                    count.addAndGet(helper.delete(transaction, deleteObj));
                 }
             });
             changeCount += count.get();

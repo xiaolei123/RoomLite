@@ -1,8 +1,5 @@
 package me.xiaolei.room_lite.runtime.dao_proxy.proxy;
 
-import android.content.ContentValues;
-
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -15,7 +12,6 @@ import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.runtime.dao_proxy.DaoProxy;
 import me.xiaolei.room_lite.runtime.sqlite.LiteDataBase;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
-import me.xiaolei.room_lite.runtime.util.RoomLiteUtil;
 
 public class UpdateProxy extends DaoProxy
 {
@@ -64,49 +60,13 @@ public class UpdateProxy extends DaoProxy
             EntityHelper helper = liteDatabase.getEntityHelper(klass);
             // 获取要更新的对象合集
             List<Object> updateObjs = entry.getValue();
-            // 获取类当前的表名
-            String tableName = helper.getTableName();
-            // 获取所有的主键字段
-            List<Field> keyFields = RoomLiteUtil.getPrimaryKeyField(klass);
-            // 生成更新条件
-            StringBuilder whereClause = new StringBuilder();
-            for (int i = 0; i < keyFields.size(); i++)
-            {
-                Field keyField = keyFields.get(i);
-                // 获取表字段名
-                String columnName = RoomLiteUtil.getColumnName(keyField);
-                whereClause.append(columnName).append("=?");
-                if (i < keyFields.size() - 1)
-                {
-                    whereClause.append(" AND");
-                }
-            }
-            // 获取所有对象的whereClause的值
-            List<String[]> whereArgss = new LinkedList<>();
-            List<ContentValues> contentValues = new LinkedList<>();
-            for (Object updateObj : updateObjs)
-            {
-                String[] values = new String[keyFields.size()];
-                for (int i = 0; i < keyFields.size(); i++)
-                {
-                    Field keyField = keyFields.get(i);
-                    // 获取某个主键字段的值，并生成字符串
-                    values[i] = String.valueOf(RoomLiteUtil.getFieldValue(updateObj, keyField));
-                }
-                whereArgss.add(values);
-                // 获取这个对象转换成的ContentValues
-                contentValues.add(helper.toContentValues(updateObj));
-            }
-
+            
             AtomicInteger count = new AtomicInteger(0);
             database.doTransaction(transaction ->
             {
-                for (int i = 0; i < whereArgss.size(); i++)
+                for (Object updateObj : updateObjs)
                 {
-                    String[] whereArgs = whereArgss.get(i);
-                    ContentValues values = contentValues.get(i);
-                    int changeRow = transaction.update(tableName, values, whereClause.toString(), whereArgs);
-                    count.addAndGet(changeRow);
+                    count.addAndGet(helper.update(transaction, updateObj));
                 }
             });
             changeCount += count.get();
