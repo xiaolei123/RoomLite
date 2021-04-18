@@ -26,4 +26,5 @@ public class Global
     public static ClassName ToStringConvert = ClassName.get("me.xiaolei.room_lite.runtime.coverts.base", "ToStringConvert");
     public static ClassName ToBooleanConvert = ClassName.get("me.xiaolei.room_lite.runtime.coverts.base", "ToBooleanConvert");
     public static ClassName ToIntegerConvert = ClassName.get("me.xiaolei.room_lite.runtime.coverts.base", "ToIntegerConvert");
+    public static ClassName LiteDataBase = ClassName.get("me.xiaolei.room_lite.runtime.sqlite", "LiteDataBase");
 }

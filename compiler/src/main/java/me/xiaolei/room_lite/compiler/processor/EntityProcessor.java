@@ -36,14 +36,13 @@ public class EntityProcessor extends BaseProcessor
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment environment)
     {
-        logger.info("process-start");
+        if (set == null || set.isEmpty())
+        {
+            return false;
+        }
         try
         {
-            if (set == null || set.isEmpty())
-            {
-                logger.info("annotations == null or empty");
-                return false;
-            }
+            logger.info("process-start");
             Set<? extends Element> elements = environment.getElementsAnnotatedWith(Entity.class);
             for (Element element : elements)
             {
