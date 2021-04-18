@@ -21,10 +21,15 @@ public interface UserDao
     int addUser(User[] user);
 
     @Insert
+    void addUser(List<User> user);
+    
+    @Insert
     void addUser(List<User> list, User[] array, User single);
+
 
     @Delete
     int delete(User user);
+
 
     @Delete
     int delete(User[] user);
