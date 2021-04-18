@@ -97,14 +97,21 @@ public class DaoProcessor extends BaseProcessor
                 .addAnnotation(Global.Keep)
                 .addSuperinterface(klass);
         // 持有数据库的引用
+        FieldSpec database = FieldSpec.builder(Global.RoomLiteDatabase, "database")
+                .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+                .build();
+        // 持有数据库的引用
         FieldSpec sqLite = FieldSpec.builder(Global.LiteDataBase, "sqLite")
                 .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
                 .build();
+        implClass.addField(database);
         implClass.addField(sqLite);
         // 实现构造函数
         MethodSpec constructor = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
+                .addParameter(Global.RoomLiteDatabase, "database")
                 .addParameter(Global.LiteDataBase, "sqLite")
+                .addStatement("this.database = database")
                 .addStatement("this.sqLite = sqLite")
                 .build();
         implClass.addMethod(constructor);

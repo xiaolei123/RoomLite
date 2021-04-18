@@ -3,10 +3,13 @@ package me.xiaolei.room_lite.compiler.utils;
 import com.squareup.javapoet.MethodSpec;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -15,11 +18,13 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.annotations.Entity;
 import me.xiaolei.room_lite.annotations.dao.Delete;
 import me.xiaolei.room_lite.annotations.dao.Insert;
 import me.xiaolei.room_lite.annotations.dao.Query;
 import me.xiaolei.room_lite.annotations.dao.Update;
+import me.xiaolei.room_lite.compiler.Global;
 
 public class DaoProcessorUtil
 {
@@ -103,30 +108,98 @@ public class DaoProcessorUtil
      */
     public void insert(MethodSpec.Builder builder, ExecutableElement method, Insert insert, List<? extends VariableElement> params, TypeMirror returnType)
     {
-        builder.addStatement("throw new $T($S)", RuntimeException.class, "函数尚未实现");
         // 首先检查返回类型合不合法
-        TypeKind kind = returnType.getKind();
-        if (kind != TypeKind.INT && kind != TypeKind.VOID)
+        TypeKind returnTypeKind = returnType.getKind();
+        if (returnTypeKind != TypeKind.INT && returnTypeKind != TypeKind.VOID)
         {
             throw new RuntimeException(method + "@Insert 注解支持的返回类型为: int void");
         }
 
+        builder.addStatement("$T changeCount = new AtomicInteger(0)", AtomicInteger.class);
+        // 先循环参数，循环生成类型判断代码
         for (VariableElement param : params)
         {
+            // 参数类型
             TypeMirror paramType = param.asType();
-            if (isEntityArray(paramType)) // Entity数组
+            // 参数名称
+            String paramName = param.getSimpleName().toString();
+            TypeMirror entityType;
+            // 抽取插入的类型
+            if (isEntityArray(paramType)) // 数组
             {
-                System.out.println("EntityArray");
-            } else if (isEntityList(paramType)) // Entity集合
+                entityType = ((ArrayType) paramType).getComponentType();
+            } else if (isEntityList(paramType)) // List集合
             {
-                System.out.println("EntityList");
-            } else if (isEntity(paramType)) // 单个Entity
+                List<? extends TypeMirror> typeArgs = ((DeclaredType) paramType).getTypeArguments();
+                entityType = typeArgs.get(0);
+            } else if (isEntity(paramType)) // Entity
             {
-                System.out.println("Entity");
+                entityType = paramType;
             } else
             {
-                throw new RuntimeException(method + ":支持的参数类型为: Entity / Entity[] / List<Entity>");
+                throw new RuntimeException(method + "@Insert 支持的参数类型为: Entity / Entity[] / List<Entity>");
             }
+            // 插入类型的Element
+            TypeElement entityElement = (TypeElement) typeUtil.asElement(entityType);
+            // 获取到对应的类全名
+            String entityTypeName = entityElement.getQualifiedName().toString();
+            // 定义对应的帮助类的名称
+            String helperName = paramName + "$$helper";
+            // 获取对应的帮助类
+            builder.addStatement("$T $N = this.database.getEntityHelper($N.class)", EntityHelper.class, helperName, entityTypeName);
+            // 对帮助类进行判断，不存在则说明插入的类型不属于这个数据库
+            builder.addCode("if ($N == null)", helperName);
+            // 直接抛出异常
+            builder.addStatement("throw new $T(this.database.getDatabaseName() + \"不存在 $N所对应的表\")", RuntimeException.class, entityTypeName);
+        }
+
+        // 再循环参数，循环生成批量插入代码
+        builder.addCode("this.sqLite.doTransaction((transaction) ->");//
+        builder.addCode("{");//
+        for (VariableElement param : params)
+        {
+            // 参数类型
+            TypeMirror paramType = param.asType();
+            // 参数名称
+            String paramName = param.getSimpleName().toString();
+            TypeMirror entityType = null;
+            if (isEntityArray(paramType)) // Entity数组
+            {
+                entityType = ((ArrayType) paramType).getComponentType();
+            } else if (isEntityList(paramType)) // Entity集合
+            {
+                List<? extends TypeMirror> typeArgs = ((DeclaredType) paramType).getTypeArguments();
+                entityType = typeArgs.get(0);
+            } else if (isEntity(paramType)) // 单个Entity
+            {
+                entityType = paramType;
+            }
+
+            TypeElement entityElement = (TypeElement) typeUtil.asElement(entityType);
+            String tableName = ElementUtil.getTableName(entityElement);
+            String entityTypeName = entityElement.getQualifiedName().toString();
+            String helperName = paramName + "$$helper";
+            String valueName = paramName + "$$values";
+
+            if (isEntityArray(paramType) || isEntityList(paramType)) // List和数组的代码方式一样
+            {
+                builder.addCode("for($N obj:$N)", entityTypeName, paramName);
+                builder.addCode("{");
+                builder.addStatement("$T $N = $N.toContentValues(obj)", Global.ContentValues, valueName, helperName);
+                builder.addStatement("changeCount.getAndAdd((int) transaction.insert($S, null, $N))", tableName, valueName);
+                builder.addCode("}");
+            } else if (isEntity(paramType))
+            {
+                builder.addStatement("$T $N = $N.toContentValues($N)", Global.ContentValues, valueName, helperName, paramName);
+                builder.addStatement("changeCount.getAndAdd((int) transaction.insert($S, null, $N))", tableName, valueName);
+            }
+        }
+        builder.addStatement("})");
+
+        // 判断是否需要返回int数据
+        if (returnTypeKind == TypeKind.INT)
+        {
+            builder.addStatement("return changeCount.get()");
         }
     }
 
