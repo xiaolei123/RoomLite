@@ -96,6 +96,8 @@ public class EntityProcessor extends BaseProcessor
         MethodSpec delete = EntityHelperUtils.delete(element);
         // 更新记录
         MethodSpec update = EntityHelperUtils.update(element);
+        // 插入记录
+        MethodSpec insert = EntityHelperUtils.insert(element);
 
 
         // 把方法添加到类里
@@ -108,6 +110,7 @@ public class EntityProcessor extends BaseProcessor
         helperClass.addMethod(setContentValue);
         helperClass.addMethod(delete);
         helperClass.addMethod(update);
+        helperClass.addMethod(insert);
         for (FieldSpec fieldSpec : fieldSpecs)
         {
             helperClass.addField(fieldSpec);

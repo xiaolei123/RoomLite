@@ -37,4 +37,9 @@ public interface EntityHelper
      * 更新数据库的数据
      */
     public int update(SQLiteWriter sqLite, Object obj) throws Exception;
+
+    /**
+     * 插入数据
+     */
+    public int insert(SQLiteWriter sqLite, Object obj) throws Exception;
 }

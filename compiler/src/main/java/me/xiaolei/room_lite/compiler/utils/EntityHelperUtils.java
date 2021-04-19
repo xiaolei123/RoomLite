@@ -406,4 +406,29 @@ public class EntityHelperUtils
         builder.addStatement("return 1");
         return builder.build();
     }
+
+    /**
+     * 更新记录
+     */
+    public static MethodSpec insert(TypeElement element)
+    {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("insert")
+                .returns(int.class)
+                .addModifiers(Modifier.PUBLIC)
+                .addException(Exception.class)
+                .addAnnotation(Override.class)
+                .addParameter(SQLiteWriter.class, "sqLite")
+                .addParameter(Object.class, "obj");
+
+        String entityType = element.asType().toString();
+        String tableName = ElementUtil.getTableName(element);
+
+        builder.addStatement("if (obj == null) return 0");
+        builder.addStatement("if (!(obj instanceof $N)) throw new Exception(obj + \" not instanceof $N\")", entityType, entityType);
+        
+        builder.addStatement("ContentValues obj_values = this.toContentValues(obj)");
+        builder.addStatement("sqLite.insert($S,null,obj_values)", tableName);
+        builder.addStatement("return 1");
+        return builder.build();
+    }
 }

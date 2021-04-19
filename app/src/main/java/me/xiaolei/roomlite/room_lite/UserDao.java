@@ -22,7 +22,7 @@ public interface UserDao
 
     @Insert
     void addUser(List<User> user);
-    
+
     @Insert
     void addUser(List<User> list, User[] array, User single);
 
@@ -39,7 +39,16 @@ public interface UserDao
 
 
     @Update
-    int update(User user);
+    int update(User single);
+
+    @Update
+    int update(User[] array);
+
+    @Update
+    int update(List<User> list);
+
+    @Update
+    int update(User single, User[] array, List<User> list);
 
 
     @Query(what = "date", entity = User.class, limit = "0,1")
