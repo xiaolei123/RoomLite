@@ -76,4 +76,8 @@ public interface UserDao
     // 模糊查询
     @Query(entity = User.class, whereClause = "name like ?")
     public User[] querySearch(String name);
+
+    // 模糊查询
+    @Query(entity = User.class)
+    public Date[] querySearch();
 }

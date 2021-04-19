@@ -1,5 +1,6 @@
 package me.xiaolei.room_lite.compiler.utils;
 
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 
 import java.util.List;
@@ -44,63 +45,6 @@ public class DaoProcessorUtil
     }
 
     /**
-     * 是个单个表
-     */
-    private boolean isEntity(TypeMirror paramType)
-    {
-        if (paramType.getKind().isPrimitive())
-        {
-            return false;
-        } else
-            return paramType instanceof DeclaredType && ((DeclaredType) paramType).asElement().getAnnotation(Entity.class) != null;
-    }
-
-    /**
-     * 是表数组
-     */
-    private boolean isEntityArray(TypeMirror paramType)
-    {
-        if (paramType.getKind().isPrimitive())
-            return false;
-        if (paramType instanceof ArrayType)
-        {
-            TypeMirror type = ((ArrayType) paramType).getComponentType();
-            return isEntity(type);
-        } else
-        {
-            return false;
-        }
-    }
-
-    /**
-     * 是表List集合
-     */
-    private boolean isEntityList(TypeMirror paramType)
-    {
-        if (paramType.getKind().isPrimitive())
-            return false;
-        if (paramType instanceof DeclaredType)
-        {
-            Element element = ((DeclaredType) paramType).asElement();
-            if (List.class.getCanonicalName().equals(element.toString())) // 如果是List
-            {
-                List<? extends TypeMirror> typeArgs = ((DeclaredType) paramType).getTypeArguments();
-                if (typeArgs.isEmpty())
-                    return false;
-                // 获取范型类型
-                TypeMirror genericType = typeArgs.get(0);
-                return isEntity(genericType);
-            } else
-            {
-                return false;
-            }
-        } else
-        {
-            return false;
-        }
-    }
-
-    /**
      * 插入
      *
      * @param builder    函数重构
@@ -127,14 +71,14 @@ public class DaoProcessorUtil
             String paramName = param.getSimpleName().toString();
             TypeMirror entityType;
             // 抽取插入的类型
-            if (isEntityArray(paramType)) // 数组
+            if (TypeUtil.isEntityArray(paramType)) // 数组
             {
                 entityType = ((ArrayType) paramType).getComponentType();
-            } else if (isEntityList(paramType)) // List集合
+            } else if (TypeUtil.isEntityList(paramType)) // List集合
             {
                 List<? extends TypeMirror> typeArgs = ((DeclaredType) paramType).getTypeArguments();
                 entityType = typeArgs.get(0);
-            } else if (isEntity(paramType)) // Entity
+            } else if (TypeUtil.isEntity(paramType)) // Entity
             {
                 entityType = paramType;
             } else
@@ -165,14 +109,14 @@ public class DaoProcessorUtil
             // 参数名称
             String paramName = param.getSimpleName().toString();
             TypeMirror entityType = null;
-            if (isEntityArray(paramType)) // Entity数组
+            if (TypeUtil.isEntityArray(paramType)) // Entity数组
             {
                 entityType = ((ArrayType) paramType).getComponentType();
-            } else if (isEntityList(paramType)) // Entity集合
+            } else if (TypeUtil.isEntityList(paramType)) // Entity集合
             {
                 List<? extends TypeMirror> typeArgs = ((DeclaredType) paramType).getTypeArguments();
                 entityType = typeArgs.get(0);
-            } else if (isEntity(paramType)) // 单个Entity
+            } else if (TypeUtil.isEntity(paramType)) // 单个Entity
             {
                 entityType = paramType;
             }
@@ -181,13 +125,13 @@ public class DaoProcessorUtil
             String entityTypeName = entityElement.getQualifiedName().toString();
             String helperName = paramName + "$$helper";
 
-            if (isEntityArray(paramType) || isEntityList(paramType)) // List和数组的代码方式一样
+            if (TypeUtil.isEntityArray(paramType) || TypeUtil.isEntityList(paramType)) // List和数组的代码方式一样
             {
                 builder.addCode("for($N obj:$N)", entityTypeName, paramName);
                 builder.addCode("{");
                 builder.addStatement("changeCount.getAndAdd((int) $N.insert(transaction, obj))", helperName);
                 builder.addCode("}");
-            } else if (isEntity(paramType))
+            } else if (TypeUtil.isEntity(paramType))
             {
                 builder.addStatement("changeCount.getAndAdd((int) $N.insert(transaction, $N))", helperName, paramName);
             }
@@ -228,14 +172,14 @@ public class DaoProcessorUtil
             String paramName = param.getSimpleName().toString();
             TypeMirror entityType;
             // 抽取插入的类型
-            if (isEntityArray(paramType)) // 数组
+            if (TypeUtil.isEntityArray(paramType)) // 数组
             {
                 entityType = ((ArrayType) paramType).getComponentType();
-            } else if (isEntityList(paramType)) // List集合
+            } else if (TypeUtil.isEntityList(paramType)) // List集合
             {
                 List<? extends TypeMirror> typeArgs = ((DeclaredType) paramType).getTypeArguments();
                 entityType = typeArgs.get(0);
-            } else if (isEntity(paramType)) // Entity
+            } else if (TypeUtil.isEntity(paramType)) // Entity
             {
                 entityType = paramType;
             } else
@@ -266,14 +210,14 @@ public class DaoProcessorUtil
             // 参数名称
             String paramName = param.getSimpleName().toString();
             TypeMirror entityType = null;
-            if (isEntityArray(paramType)) // Entity数组
+            if (TypeUtil.isEntityArray(paramType)) // Entity数组
             {
                 entityType = ((ArrayType) paramType).getComponentType();
-            } else if (isEntityList(paramType)) // Entity集合
+            } else if (TypeUtil.isEntityList(paramType)) // Entity集合
             {
                 List<? extends TypeMirror> typeArgs = ((DeclaredType) paramType).getTypeArguments();
                 entityType = typeArgs.get(0);
-            } else if (isEntity(paramType)) // 单个Entity
+            } else if (TypeUtil.isEntity(paramType)) // 单个Entity
             {
                 entityType = paramType;
             }
@@ -282,13 +226,13 @@ public class DaoProcessorUtil
             String entityTypeName = entityElement.getQualifiedName().toString();
             String helperName = paramName + "$$helper";
 
-            if (isEntityArray(paramType) || isEntityList(paramType)) // List和数组的代码方式一样
+            if (TypeUtil.isEntityArray(paramType) || TypeUtil.isEntityList(paramType)) // List和数组的代码方式一样
             {
                 builder.addCode("for($N obj:$N)", entityTypeName, paramName);
                 builder.addCode("{");
                 builder.addStatement("changeCount.getAndAdd((int) $N.delete(transaction, obj))", helperName);
                 builder.addCode("}");
-            } else if (isEntity(paramType))
+            } else if (TypeUtil.isEntity(paramType))
             {
                 builder.addStatement("changeCount.getAndAdd((int) $N.delete(transaction, $N))", helperName, paramName);
             }
@@ -329,14 +273,14 @@ public class DaoProcessorUtil
             String paramName = param.getSimpleName().toString();
             TypeMirror entityType;
             // 抽取插入的类型
-            if (isEntityArray(paramType)) // 数组
+            if (TypeUtil.isEntityArray(paramType)) // 数组
             {
                 entityType = ((ArrayType) paramType).getComponentType();
-            } else if (isEntityList(paramType)) // List集合
+            } else if (TypeUtil.isEntityList(paramType)) // List集合
             {
                 List<? extends TypeMirror> typeArgs = ((DeclaredType) paramType).getTypeArguments();
                 entityType = typeArgs.get(0);
-            } else if (isEntity(paramType)) // Entity
+            } else if (TypeUtil.isEntity(paramType)) // Entity
             {
                 entityType = paramType;
             } else
@@ -367,14 +311,14 @@ public class DaoProcessorUtil
             // 参数名称
             String paramName = param.getSimpleName().toString();
             TypeMirror entityType = null;
-            if (isEntityArray(paramType)) // Entity数组
+            if (TypeUtil.isEntityArray(paramType)) // Entity数组
             {
                 entityType = ((ArrayType) paramType).getComponentType();
-            } else if (isEntityList(paramType)) // Entity集合
+            } else if (TypeUtil.isEntityList(paramType)) // Entity集合
             {
                 List<? extends TypeMirror> typeArgs = ((DeclaredType) paramType).getTypeArguments();
                 entityType = typeArgs.get(0);
-            } else if (isEntity(paramType)) // 单个Entity
+            } else if (TypeUtil.isEntity(paramType)) // 单个Entity
             {
                 entityType = paramType;
             }
@@ -383,13 +327,13 @@ public class DaoProcessorUtil
             String entityTypeName = entityElement.getQualifiedName().toString();
             String helperName = paramName + "$$helper";
 
-            if (isEntityArray(paramType) || isEntityList(paramType)) // List和数组的代码方式一样
+            if (TypeUtil.isEntityArray(paramType) || TypeUtil.isEntityList(paramType)) // List和数组的代码方式一样
             {
                 builder.addCode("for($N obj:$N)", entityTypeName, paramName);
                 builder.addCode("{");
                 builder.addStatement("changeCount.getAndAdd((int) $N.update(transaction, obj))", helperName);
                 builder.addCode("}");
-            } else if (isEntity(paramType))
+            } else if (TypeUtil.isEntity(paramType))
             {
                 builder.addStatement("changeCount.getAndAdd((int) $N.update(transaction, $N))", helperName, paramName);
             }
@@ -448,13 +392,49 @@ public class DaoProcessorUtil
         // 生成查询结果代码 try cache
         builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
         builder.addCode("{");
-        
-        
-        
-        
+        builder.addStatement("String[] columnNames = cursor.getColumnNames()");//;
+
+        if (TypeUtil.isArray(returnType)) // 是数组
+        {
+            // 获取数组的类型
+            TypeMirror componentType = ((ArrayType) returnType).getComponentType();
+            // 判断数据类型是不是基础类型,或者是字符串
+            if (TypeUtil.isPrimitiveOrBox(returnType) || TypeUtil.isString(componentType))
+            {
+                builder.addStatement("int columnIndex = cursor.getColumnIndex(columnNames[0])");
+                builder.addStatement("$T convert = $T.getConvert(String.class)", Global.Convert, Global.Converts);
+                builder.addStatement("$T[] results = new $T[cursor.getCount()]", ClassName.get(componentType), ClassName.get(componentType));
+                builder.addCode("while (cursor.moveToNext())");
+                builder.addStatement("results[cursor.getPosition()] = ($T) convert.cursorToJavaObject(cursor, columnIndex)", ClassName.get(componentType));
+                builder.addStatement("return results");
+            } else if (componentType.equals(entityClass)) // 再判断类型是不是当前表的类型
+            {
+                builder.addStatement("$T helper = this.database.getEntityHelper($T.class)", EntityHelper.class, ClassName.get(componentType));//;
+                builder.addStatement("$T[] results = new $T[cursor.getCount()]", ClassName.get(componentType), ClassName.get(componentType));//;
+                builder.addCode("while (cursor.moveToNext())");//
+                builder.addStatement("results[cursor.getPosition()] = ($T) helper.fromCursor(cursor)", ClassName.get(componentType));//
+                builder.addStatement("return results");//;
+            } else
+            {
+                // 数组不是基础类型，也不是表的类型
+                builder.addStatement("int columnIndex = cursor.getColumnIndex(columnNames[0])");
+                builder.addStatement("$T convert = $T.getConvert(String.class)", Global.Convert, Global.Converts);
+                builder.addStatement("if (convert == null) throw new $T($S)", RuntimeException.class, method + "函数尚未实现对" + componentType + "的支持");
+                builder.addStatement("$T[] results = new $T[cursor.getCount()]", ClassName.get(componentType), ClassName.get(componentType));
+                builder.addCode("while (cursor.moveToNext())");
+                builder.addStatement("results[cursor.getPosition()] = ($T) convert.cursorToJavaObject(cursor, columnIndex)", ClassName.get(componentType));
+                builder.addStatement("return results");
+            }
+
+        } else if (TypeUtil.isPrimitiveOrBox(returnType)) // 是基础类型
+        {
+            builder.addStatement("throw new $T($S)", RuntimeException.class, "函数尚未实现");
+        } else
+        {
+            builder.addStatement("throw new $T($S)", RuntimeException.class, "函数尚未实现");
+        }
+
         builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
-        
-        builder.addStatement("throw new $T($S)", RuntimeException.class, "函数尚未实现");
     }
 
 }
