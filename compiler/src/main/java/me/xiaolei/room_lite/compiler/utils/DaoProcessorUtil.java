@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.processing.Filer;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
@@ -178,7 +180,7 @@ public class DaoProcessorUtil
             TypeElement entityElement = (TypeElement) typeUtil.asElement(entityType);
             String entityTypeName = entityElement.getQualifiedName().toString();
             String helperName = paramName + "$$helper";
-            
+
             if (isEntityArray(paramType) || isEntityList(paramType)) // List和数组的代码方式一样
             {
                 builder.addCode("for($N obj:$N)", entityTypeName, paramName);
@@ -411,6 +413,48 @@ public class DaoProcessorUtil
      */
     public void query(MethodSpec.Builder builder, ExecutableElement method, Query query, List<? extends VariableElement> params, TypeMirror returnType)
     {
+        AnnotationMirror annotationMirrors = method.getAnnotationMirrors().stream().filter((mirror ->
+        {
+            return mirror.getAnnotationType().toString().equals(Query.class.getCanonicalName());
+        })).findFirst().get();
+        AnnotationValue entityValue = annotationMirrors.getElementValues().entrySet().stream().filter((entry) ->
+        {
+            return entry.getKey().getSimpleName().toString().equals("entity");
+        }).findFirst().get().getValue();
+        // 查询语句建造
+        StringBuilder sqlBuilder = new StringBuilder();
+        // 查询什么
+        String what = query.what();
+        // 从哪里查
+        TypeMirror entityClass = (TypeMirror) entityValue.getValue();
+        String tableName = ElementUtil.getTableName(typeUtil.asElement(entityClass));
+        // 查询条件
+        String where = query.whereClause();
+        // 翻页条件
+        String limit = query.limit();
+        // 生成查询语句
+        String querySql = sqlBuilder.append("SELECT ")
+                .append(what)
+                .append(" FROM ")
+                .append(tableName)
+                .append(" WHERE ")
+                .append(where)
+                .append(" LIMIT ")
+                .append(limit).toString();
+
+        String argsName = method.getSimpleName().toString() + "$$args";
+        // 自动生成参数代码
+        builder.addStatement("$T[] $N = new String[]{}", String.class, argsName);
+        // 生成查询结果代码 try cache
+        builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
+        builder.addCode("{");
+        
+        
+        
+        
+        builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
+        
         builder.addStatement("throw new $T($S)", RuntimeException.class, "函数尚未实现");
     }
+
 }
