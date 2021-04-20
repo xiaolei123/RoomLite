@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import me.xiaolei.room_lite.EntityHelper;
+import me.xiaolei.room_lite.Suffix;
 
 public abstract class RoomLiteDatabase
 {
@@ -42,7 +43,7 @@ public abstract class RoomLiteDatabase
         {
             String klassName = entityKlass.getSimpleName();
             String packageName = Objects.requireNonNull(entityKlass.getPackage()).getName();
-            String helperName = packageName + "." + klassName + "$$EntityHelper";
+            String helperName = packageName + "." + klassName + Suffix.helper_suffix;
             try
             {
                 Class<? extends EntityHelper> helperClass = (Class<? extends EntityHelper>) Class.forName(helperName);
@@ -155,7 +156,7 @@ public abstract class RoomLiteDatabase
             try
             {
                 String className = daoClass.getSimpleName();
-                String implClassName = daoClass.getPackage().getName() + "." + className + "$$DaoImpl";
+                String implClassName = daoClass.getPackage().getName() + "." + className + Suffix.dao_suffix;
                 Class<T> daoImplClass = (Class<T>) Class.forName(implClassName);
                 Constructor<T> constructor = daoImplClass.getDeclaredConstructor(RoomLiteDatabase.class, LiteDataBase.class);
                 dao = (T) constructor.newInstance(this, this.database);

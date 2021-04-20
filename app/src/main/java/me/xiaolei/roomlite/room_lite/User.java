@@ -18,12 +18,12 @@ public class User
         this.id = id;
     }
 
-    @Column(type = Column.SQLType.INTEGER)
+    @Column(type = Column.SQLType.INTEGER, notNull = true, unique = true, defaultValue = "0")
     @PrimaryKey(autoGenerate = true)
     public int id;
 
     public String name = "当前时间:" + System.currentTimeMillis();
-    
+
     @Column(name = "x_short")
     public short x_short;
     public byte x_byte;

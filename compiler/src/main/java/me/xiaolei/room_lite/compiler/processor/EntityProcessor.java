@@ -17,6 +17,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 import me.xiaolei.room_lite.EntityHelper;
+import me.xiaolei.room_lite.Suffix;
 import me.xiaolei.room_lite.annotations.Entity;
 import me.xiaolei.room_lite.compiler.Global;
 import me.xiaolei.room_lite.compiler.base.BaseProcessor;
@@ -69,7 +70,7 @@ public class EntityProcessor extends BaseProcessor
         // 获取类名
         String klassName = element.getSimpleName().toString();
         // 辅助类名
-        String helperKlassName = klassName + "$$EntityHelper";
+        String helperKlassName = klassName + Suffix.helper_suffix;
         // 新建辅助类
         TypeSpec.Builder helperClass = TypeSpec.classBuilder(helperKlassName)
                 .addModifiers(Modifier.PUBLIC)

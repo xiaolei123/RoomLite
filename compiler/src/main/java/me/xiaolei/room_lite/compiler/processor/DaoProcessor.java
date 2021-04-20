@@ -23,6 +23,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
+import me.xiaolei.room_lite.Suffix;
 import me.xiaolei.room_lite.annotations.dao.Dao;
 import me.xiaolei.room_lite.annotations.dao.Delete;
 import me.xiaolei.room_lite.annotations.dao.Insert;
@@ -90,7 +91,7 @@ public class DaoProcessor extends BaseProcessor
         String klassName = element.getSimpleName().toString();
         TypeName klass = ClassName.get(element.asType());
         // 辅助类名
-        String daoImplKlassName = klassName + "$$DaoImpl";
+        String daoImplKlassName = klassName + Suffix.dao_suffix;
         // 新建Dao的实现类
         TypeSpec.Builder implClass = TypeSpec.classBuilder(daoImplKlassName)
                 .addModifiers(Modifier.PUBLIC)

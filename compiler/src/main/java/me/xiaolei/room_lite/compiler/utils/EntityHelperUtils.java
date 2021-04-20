@@ -14,6 +14,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import me.xiaolei.room_lite.SQLiteWriter;
+import me.xiaolei.room_lite.Suffix;
 import me.xiaolei.room_lite.annotations.Column;
 import me.xiaolei.room_lite.annotations.Entity;
 import me.xiaolei.room_lite.annotations.PrimaryKey;
@@ -98,7 +99,7 @@ public class EntityHelperUtils
             // 字段名称
             String fieldName = field.getSimpleName().toString();
             // 转换器字段名称
-            String convertFieldName = fieldName + "$$convert";
+            String convertFieldName = fieldName + Suffix.convert_suffix;
             // 在构造函数里进行获取
             constructor.addStatement("this.$N = $T.getConvert($T.class)", convertFieldName, Global.Converts, field.asType());
 
@@ -186,11 +187,10 @@ public class EntityHelperUtils
      */
     public static MethodSpec fromCursor(TypeElement element)
     {
-        TypeElement typeElement = ((TypeElement) element);
         // 获取所有的字段
         List<VariableElement> fields = ElementUtil.getFields(element);
 
-        String klassName = typeElement.getQualifiedName().toString();
+        String klassName = element.getQualifiedName().toString();
         MethodSpec.Builder fromCursor = MethodSpec.methodBuilder("fromCursor")
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
@@ -206,7 +206,7 @@ public class EntityHelperUtils
             // 类字段名称
             String fieldName = field.getSimpleName().toString();
             // 对应的转换器的名字
-            String convertName = fieldName + "$$convert";
+            String convertName = fieldName + Suffix.convert_suffix;
             // 首先获取数据库的ColumnIndex
             fromCursor.addStatement("int $N_Index = cursor.getColumnIndex($S)", columnName, columnName);
             // 判断查询结果中是否存在这个值
@@ -248,7 +248,7 @@ public class EntityHelperUtils
             // 字段名称
             String columnName = ElementUtil.getColumnName(field);
             // 转换器名称
-            String convertFieldName = fieldName + "$$convert";
+            String convertFieldName = fieldName + Suffix.convert_suffix;
             // 拿到值的名称
             String valueName = fieldName + "_result";
             // 判断是否主键，并且是否是自动增长，如果是自动增长的数据，则不进行 增 改 的计算

@@ -21,8 +21,24 @@ public @interface Column
      * 类型
      */
     SQLType type() default SQLType.UNDEFINED;
-    
-    
+
+    /**
+     * 如果设置为true，这将是唯一索引，并且任何重复项都将被拒绝。
+     */
+    boolean unique() default false;
+
+    /**
+     * 声明此字段不能为NULL
+     */
+    boolean notNull() default false;
+
+    /**
+     * 默认值<br/>
+     * 默认值不会自动加上单引号 ' <br/>
+     * 如果你是个数字，则直接写比如: "100" <br/>
+     * 如果你是字符串，则应该自己加上单引号比如: "'hello'"<br/>
+     */
+    String defaultValue() default "";
 
     public static enum SQLType
     {

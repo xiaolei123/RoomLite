@@ -112,7 +112,29 @@ public class ElementUtil
         StringBuilder builder = new StringBuilder();
         // ---------------------@Column-----------------------------
         Column column = field.getAnnotation(Column.class);
-
+        if (column != null)
+        {
+            boolean notNull = column.notNull();
+            boolean unique = column.unique();
+            String defaultValue = column.defaultValue();
+            // 不为空
+            if (notNull)
+            {
+                builder.append(" NOT NULL ");
+            }
+            // 唯一性
+            if (unique)
+            {
+                builder.append(" UNIQUE ");
+            }
+            // 默认值
+            if (!defaultValue.isEmpty())
+            {
+                builder.append(" DEFAULT ");
+                builder.append(defaultValue);
+                builder.append(" ");
+            }
+        }
         // ---------------------@PrimaryKey-----------------------------
         PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
         if (primaryKey != null)
