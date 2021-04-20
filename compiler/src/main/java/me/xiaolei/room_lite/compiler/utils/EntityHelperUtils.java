@@ -5,6 +5,8 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -212,12 +214,22 @@ public class EntityHelperUtils
         int index = 0;
         // 生成对应数量的预备字符串占位
         builder.addStatement("$T[] sqls = new $T[$L]", String.class, String.class, indexCount);
-
+        ArrayList<String> indexNames = new ArrayList<>();
         // 对字段上的注解进行索引SQL语句的生成
         for (VariableElement columnElement : columns)
         {
             boolean unique = columnElement.getAnnotation(Column.class).unique();
             String columnName = ElementUtil.getColumnName(columnElement);
+            String indexName = tableName + "_" + columnName + "_index";
+            // 先判断这个索引名称是否存在
+            if (indexNames.contains(indexName))
+            {
+                throw new RuntimeException(element + "声明的索引: " + indexName + " 有重复");
+            } else
+            {
+                // 如果不存在，则缓存起来
+                indexNames.add(indexName);
+            }
 
             StringBuilder indexSql = new StringBuilder()
                     .append("CREATE ");
@@ -226,10 +238,7 @@ public class EntityHelperUtils
                 indexSql.append("UNIQUE ");
             }
             indexSql.append("INDEX ")
-                    .append(tableName)
-                    .append("_")
-                    .append(columnName)
-                    .append("_index")
+                    .append(indexName)
                     .append(" ON ")
                     .append(tableName)
                     .append("(`")
@@ -248,6 +257,16 @@ public class EntityHelperUtils
             }
             // 索引名称
             String indexName = t_index.name().isEmpty() ? (tableName + "_index") : t_index.name();
+
+            // 先判断这个索引名称是否存在
+            if (indexNames.contains(indexName))
+            {
+                throw new RuntimeException(element + "声明的索引: " + indexName + " 有重复");
+            } else
+            {
+                // 如果不存在，则缓存起来
+                indexNames.add(indexName);
+            }
             // 是否唯一
             boolean unique = t_index.unique();
             // 构建加入索引的字段名

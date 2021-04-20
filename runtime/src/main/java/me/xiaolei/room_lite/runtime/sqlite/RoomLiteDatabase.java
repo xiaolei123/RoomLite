@@ -1,6 +1,5 @@
 package me.xiaolei.room_lite.runtime.sqlite;
 
-
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
@@ -98,8 +97,14 @@ public abstract class RoomLiteDatabase
             EntityHelper helper = this.helperCache.get(entity);
             assert helper != null;
             String sql = helper.getCreateSQL();
-            Log.e("RoomLite", "create:" + sql);
             db.execSQL(sql);
+            String[] indexCreateSqls = helper.getCreateIndexSQL();
+            Log.e("RoomLite", "create:" + sql);
+            for (String createSql : indexCreateSqls)
+            {
+                Log.e("RoomLite", "indexCreate:" + createSql);
+                db.execSQL(createSql);
+            }
         }
     }
 
