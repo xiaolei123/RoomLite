@@ -49,7 +49,7 @@ public class TypeUtil
             return false;
         }
     }
-
+    
     /**
      * 是表List集合
      */

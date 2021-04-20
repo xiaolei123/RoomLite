@@ -80,4 +80,7 @@ public interface UserDao
     // 模糊查询
     @Query(entity = User.class)
     public Date[] querySearch();
+
+    @Query(what = "count(*)", entity = User.class)
+    public Integer count();
 }

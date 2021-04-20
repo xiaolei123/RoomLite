@@ -4,6 +4,7 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.processing.Filer;
@@ -385,24 +386,30 @@ public class DaoProcessorUtil
                 .append(where)
                 .append(" LIMIT ")
                 .append(limit).toString();
-
+        // 拼接参数
+        StringJoiner joiner = new StringJoiner(",");
+        for (VariableElement param : params)
+        {
+            String paramName = param.getSimpleName().toString();
+            joiner.add("String.valueOf(" + paramName + ")");
+        }
         String argsName = method.getSimpleName().toString() + "$$args";
         // 自动生成参数代码
-        builder.addStatement("$T[] $N = new String[]{}", String.class, argsName);
-        // 生成查询结果代码 try cache
-        builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
-        builder.addCode("{");
-        builder.addStatement("String[] columnNames = cursor.getColumnNames()");//;
+        builder.addStatement("$T[] $N = new String[]{" + joiner + "}", String.class, argsName);
 
         if (TypeUtil.isArray(returnType)) // 是数组
         {
+            // 生成查询结果代码 try cache
+            builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
+            builder.addCode("{");
+            builder.addStatement("String[] columnNames = cursor.getColumnNames()");//;
             // 获取数组的类型
             TypeMirror componentType = ((ArrayType) returnType).getComponentType();
             // 判断数据类型是不是基础类型,或者是字符串
             if (TypeUtil.isPrimitiveOrBox(returnType) || TypeUtil.isString(componentType))
             {
                 builder.addStatement("int columnIndex = cursor.getColumnIndex(columnNames[0])");
-                builder.addStatement("$T convert = $T.getConvert(String.class)", Global.Convert, Global.Converts);
+                builder.addStatement("$T convert = $T.getConvert($T.class)", Global.Convert, Global.Converts, ClassName.get(componentType));
                 builder.addStatement("$T[] results = new $T[cursor.getCount()]", ClassName.get(componentType), ClassName.get(componentType));
                 builder.addCode("while (cursor.moveToNext())");
                 builder.addStatement("results[cursor.getPosition()] = ($T) convert.cursorToJavaObject(cursor, columnIndex)", ClassName.get(componentType));
@@ -418,23 +425,97 @@ public class DaoProcessorUtil
             {
                 // 数组不是基础类型，也不是表的类型
                 builder.addStatement("int columnIndex = cursor.getColumnIndex(columnNames[0])");
-                builder.addStatement("$T convert = $T.getConvert(String.class)", Global.Convert, Global.Converts);
+                builder.addStatement("$T convert = $T.getConvert($T.class)", Global.Convert, Global.Converts, ClassName.get(componentType));
                 builder.addStatement("if (convert == null) throw new $T($S)", RuntimeException.class, method + "函数尚未实现对" + componentType + "的支持");
                 builder.addStatement("$T[] results = new $T[cursor.getCount()]", ClassName.get(componentType), ClassName.get(componentType));
                 builder.addCode("while (cursor.moveToNext())");
                 builder.addStatement("results[cursor.getPosition()] = ($T) convert.cursorToJavaObject(cursor, columnIndex)", ClassName.get(componentType));
                 builder.addStatement("return results");
             }
-
+            // catch
+            builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
         } else if (TypeUtil.isPrimitiveOrBox(returnType)) // 是基础类型
         {
-            builder.addStatement("throw new $T($S)", RuntimeException.class, "函数尚未实现");
+            // 生成查询结果代码 try cache
+            builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
+            builder.addCode("{");
+            builder.addStatement("String[] columnNames = cursor.getColumnNames()");//;
+            // try里的代码
+            builder.addStatement("int columnIndex = cursor.getColumnIndex(columnNames[0])");
+            builder.addStatement("$T convert = $T.getConvert($T.class)", Global.Convert, Global.Converts, ClassName.get(returnType));
+            builder.addCode("if (cursor.moveToNext())");
+            builder.addCode("{");
+            builder.addStatement("return ($T) convert.cursorToJavaObject(cursor, columnIndex)", ClassName.get(returnType));
+            builder.addCode("}");
+            builder.addCode("else");
+            builder.addCode("{");
+            builder.addStatement("return ($T)$T.defaultValue($T.class)", ClassName.get(returnType), Global.RoomLiteUtil, ClassName.get(returnType));
+            builder.addCode("}");
+            // catch
+            builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
+        } else if (returnType.equals(entityClass)) // 再判断类型是不是当前表的类型
+        {
+            // 生成查询结果代码 try cache
+            builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
+            builder.addCode("{");
+            builder.addStatement("String[] columnNames = cursor.getColumnNames()");//;
+            // try 里的代码
+            builder.addStatement("$T helper = this.database.getEntityHelper($T.class)", EntityHelper.class, ClassName.get(returnType));
+            builder.addCode("if (cursor.moveToNext())");
+            builder.addCode("{");
+            builder.addStatement("return ($T) helper.fromCursor(cursor)", ClassName.get(returnType));
+            builder.addCode("}");
+            builder.addCode("else");
+            builder.addCode("{");
+            builder.addStatement("return null");
+            builder.addCode("}");
+            // catch
+            builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
+        } else if (returnType instanceof DeclaredType)
+        {
+            DeclaredType type = ((DeclaredType) returnType);
+            List<? extends TypeMirror> typeArguments = type.getTypeArguments();
+            if (typeArguments.size() == 1) // 有一个泛型
+            {
+                TypeMirror generic = typeArguments.get(0);
+                builder.addStatement("$T sql = $S", String.class, sqlBuilder.toString());//String sql = "SELECT * FROM User WHERE 1=1 LIMIT 0,2000";
+                builder.addStatement("$T adapter = $T.getAdapter($T.class)", Global.ContainerAdapter, Global.Adapters, ClassName.get(generic));//;
+                builder.addCode("if (adapter == null)");//
+                builder.addCode("{");//
+                builder.addStatement("throw new $T(\"没有实现对应$T的ContainerAdapter支持\")", RuntimeException.class, ClassName.get(returnType));
+                builder.addCode("}");//
+                builder.addStatement("return ($T) adapter.newInstance(this.database, this.sqLite, $T.class, sql, $N)", ClassName.get(returnType), ClassName.get(generic), argsName);//
+            } else if (typeArguments.size() == 0)
+            {
+                builder.addStatement("$T convert = $T.getConvert($T.class)", Global.Convert, Global.Converts, ClassName.get(returnType));
+                builder.addCode("if (convert == null)");
+                builder.addCode("{");
+                builder.addStatement("throw new $T($S)", RuntimeException.class, "没有找到" + returnType + "对应的Convert");
+                builder.addCode("}");
+                // 生成查询结果代码 try cache
+                builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
+                builder.addCode("{");
+                builder.addStatement("String[] columnNames = cursor.getColumnNames()");//;
+                // try里的代码
+                builder.addStatement("int columnIndex = cursor.getColumnIndex(columnNames[0])");
+                builder.addCode("if (cursor.moveToNext())");
+                builder.addCode("{");
+                builder.addStatement("return ($T) convert.cursorToJavaObject(cursor, columnIndex)", ClassName.get(returnType));
+                builder.addCode("}");
+                builder.addCode("else");
+                builder.addCode("{");
+                builder.addStatement("return ($T)$T.defaultValue($T.class)", ClassName.get(returnType), Global.RoomLiteUtil, ClassName.get(returnType));
+                builder.addCode("}");
+                // catch
+                builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
+            } else // 有很多泛型
+            {
+                builder.addStatement("throw new $T($S)", RuntimeException.class, "RooLite尚未实现对" + returnType + "的支持");
+            }
         } else
         {
-            builder.addStatement("throw new $T($S)", RuntimeException.class, "函数尚未实现");
+            builder.addStatement("throw new $T($S)", RuntimeException.class, "RooLite尚未实现对" + returnType + "的支持");
         }
-
-        builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
     }
 
 }

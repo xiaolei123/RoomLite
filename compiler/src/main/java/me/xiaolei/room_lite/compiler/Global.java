@@ -28,4 +28,7 @@ public class Global
     public static ClassName ToIntegerConvert = ClassName.get("me.xiaolei.room_lite.runtime.coverts.base", "ToIntegerConvert");
     public static ClassName LiteDataBase = ClassName.get("me.xiaolei.room_lite.runtime.sqlite", "LiteDataBase");
     public static ClassName RoomLiteDatabase = ClassName.get("me.xiaolei.room_lite.runtime.sqlite", "RoomLiteDatabase");
+    public static ClassName RoomLiteUtil = ClassName.get("me.xiaolei.room_lite.runtime.util", "RoomLiteUtil");
+    public static ClassName ContainerAdapter = ClassName.get("me.xiaolei.room_lite.runtime.adapters", "ContainerAdapter");
+    public static ClassName Adapters = ClassName.get("me.xiaolei.room_lite.runtime.adapters", "Adapters");
 }
