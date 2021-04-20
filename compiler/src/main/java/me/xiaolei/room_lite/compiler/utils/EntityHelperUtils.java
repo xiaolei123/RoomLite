@@ -242,6 +242,10 @@ public class EntityHelperUtils
         {
             // 字段名称
             String[] columnNames = t_index.columnNames();
+            if (columnNames.length == 0)
+            {
+                throw new RuntimeException(element + "使用的@Entity里，indices 里，索引的字段名称不许为空");
+            }
             // 索引名称
             String indexName = t_index.name().isEmpty() ? (tableName + "_index") : t_index.name();
             // 是否唯一
