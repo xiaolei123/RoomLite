@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * 表
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.TYPE})
 public @interface Entity
 {

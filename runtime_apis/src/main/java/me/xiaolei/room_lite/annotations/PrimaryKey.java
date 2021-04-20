@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * 主键
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.FIELD})
 public @interface PrimaryKey
 {

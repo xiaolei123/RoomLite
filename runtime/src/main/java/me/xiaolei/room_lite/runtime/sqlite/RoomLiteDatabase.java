@@ -9,14 +9,12 @@ import androidx.annotation.Nullable;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import me.xiaolei.room_lite.EntityHelper;
-import me.xiaolei.room_lite.annotations.dao.Dao;
 
 public abstract class RoomLiteDatabase
 {
@@ -151,10 +149,6 @@ public abstract class RoomLiteDatabase
      */
     public <T> T getDao(Class<T> daoClass)
     {
-        if (!daoClass.isInterface() || !daoClass.isAnnotationPresent(Dao.class))
-        {
-            throw new RuntimeException("Dao仅支持接口,并且使用@Dao进行修饰");
-        }
         T dao = (T) daoCache.get(daoClass);
         if (dao == null)
         {

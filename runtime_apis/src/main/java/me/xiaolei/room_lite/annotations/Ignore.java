@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * 标识忽略
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.FIELD})
 public @interface Ignore
 {

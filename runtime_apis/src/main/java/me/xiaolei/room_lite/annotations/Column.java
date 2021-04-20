@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * 字段
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.FIELD})
 public @interface Column
 {
@@ -21,7 +21,8 @@ public @interface Column
      * 类型
      */
     SQLType type() default SQLType.UNDEFINED;
-
+    
+    
 
     public static enum SQLType
     {

@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * 参数：Entity / Entity[] / List&lt;Entity><br/>
  * 返回值：void / int<br/>
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})
 public @interface Delete
 {

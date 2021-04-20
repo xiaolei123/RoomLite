@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * 标记一个接口为Dao
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.TYPE})
 public @interface Dao
 {

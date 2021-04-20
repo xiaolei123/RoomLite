@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * Entity / Entity[] / List&lt;Entity> / 八大基本类型以及其包装类 / String<br/>
  * <br/>
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})
 public @interface Query
 {
