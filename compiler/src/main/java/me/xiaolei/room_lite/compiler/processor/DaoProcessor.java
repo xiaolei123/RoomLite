@@ -123,7 +123,6 @@ public class DaoProcessor extends BaseProcessor
         {
             if (m instanceof ExecutableElement)
             {
-                logger.info(m.getSimpleName().toString());
                 ExecutableElement method = (ExecutableElement) m;
                 Insert insert = method.getAnnotation(Insert.class);
                 Delete delete = method.getAnnotation(Delete.class);

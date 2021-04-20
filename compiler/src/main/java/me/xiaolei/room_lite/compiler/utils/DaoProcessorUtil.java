@@ -372,6 +372,10 @@ public class DaoProcessorUtil
         String what = query.what();
         // 从哪里查
         TypeMirror entityClass = (TypeMirror) entityValue.getValue();
+        Element entityElement = typeUtil.asElement(entityClass);
+        // 判断这个entity传过来的class是不是@Entity对应的class
+        if (entityElement.getAnnotation(Entity.class) == null)
+            throw new RuntimeException(method + " @Query对应的entity，传入的class必须是@Entity修饰的表类");
         String tableName = ElementUtil.getTableName(typeUtil.asElement(entityClass));
         // 查询条件
         String where = query.whereClause();
@@ -402,12 +406,12 @@ public class DaoProcessorUtil
             // 生成查询结果代码 try cache
             builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
             builder.addCode("{");
-            builder.addStatement("String[] columnNames = cursor.getColumnNames()");//;
             // 获取数组的类型
             TypeMirror componentType = ((ArrayType) returnType).getComponentType();
             // 判断数据类型是不是基础类型,或者是字符串
             if (TypeUtil.isPrimitiveOrBox(returnType) || TypeUtil.isString(componentType))
             {
+                builder.addStatement("String[] columnNames = cursor.getColumnNames()");
                 builder.addStatement("int columnIndex = cursor.getColumnIndex(columnNames[0])");
                 builder.addStatement("$T convert = $T.getConvert($T.class)", Global.Convert, Global.Converts, ClassName.get(componentType));
                 builder.addStatement("$T[] results = new $T[cursor.getCount()]", ClassName.get(componentType), ClassName.get(componentType));
@@ -424,6 +428,7 @@ public class DaoProcessorUtil
             } else
             {
                 // 数组不是基础类型，也不是表的类型
+                builder.addStatement("String[] columnNames = cursor.getColumnNames()");
                 builder.addStatement("int columnIndex = cursor.getColumnIndex(columnNames[0])");
                 builder.addStatement("$T convert = $T.getConvert($T.class)", Global.Convert, Global.Converts, ClassName.get(componentType));
                 builder.addStatement("if (convert == null) throw new $T($S)", RuntimeException.class, method + "函数尚未实现对" + componentType + "的支持");
@@ -479,7 +484,7 @@ public class DaoProcessorUtil
             {
                 TypeMirror generic = typeArguments.get(0);
                 builder.addStatement("$T sql = $S", String.class, sqlBuilder.toString());//String sql = "SELECT * FROM User WHERE 1=1 LIMIT 0,2000";
-                builder.addStatement("$T adapter = $T.getAdapter($N.class)", Global.ContainerAdapter, Global.Adapters, type.asElement().toString());//;
+                builder.addStatement("$T<?> adapter = $T.getAdapter($N.class)", Global.ContainerAdapter, Global.Adapters, type.asElement().toString());//;
                 builder.addCode("if (adapter == null)");//
                 builder.addCode("{");//
                 builder.addStatement("throw new $T(\"没有实现对应$T的ContainerAdapter支持\")", RuntimeException.class, ClassName.get(returnType));
