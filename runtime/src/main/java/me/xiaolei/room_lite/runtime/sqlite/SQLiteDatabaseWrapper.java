@@ -25,8 +25,6 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
 
     // 写的线程池
     private final ExecutorService writeExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadPoolFactory("writeExecutor"));
-    // 读的线程池
-    private final ExecutorService readExecutor = Executors.newCachedThreadPool(new ThreadPoolFactory("readExecutor"));
 
     public SQLiteDatabaseWrapper(String dbPath, String name, int version)
     {
@@ -36,7 +34,7 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
     @Override
     public void doTransaction(WriterRunnable runnable)
     {
-        postWait(writeExecutor, (database) ->
+        this.postWait((database) ->
         {
             database.beginTransaction();
             try
@@ -57,19 +55,21 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
     @Override
     public Cursor rawQuery(String sql, String[] selectionArgs)
     {
-        return postWait(readExecutor, (database) -> database.rawQuery(sql, selectionArgs));
+        SQLiteDatabase database = this.getReadableSQLiteDatabase();
+        return database.rawQuery(sql, selectionArgs);
     }
 
     @Override
     public int getVersion()
     {
-        return postWait(readExecutor, SQLiteDatabase::getVersion);
+        SQLiteDatabase database = this.getReadableSQLiteDatabase();
+        return database.getVersion();
     }
 
     @Override
     public void setVersion(int version)
     {
-        postWait(writeExecutor, (database) ->
+        this.postWait((database) ->
         {
             database.setVersion(version);
             return null;
@@ -79,7 +79,6 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
     @Override
     public void close()
     {
-        readExecutor.shutdownNow();
         writeExecutor.shutdownNow();
         super.close();
     }
@@ -122,17 +121,16 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
     /**
      * 用同步的方式进行异步操作
      *
-     * @param executor 要执行的线程池
      * @param runnable 要执行的操作
      * @param <T>      返回的数据类型
      * @return 返回类型的数据
      */
-    private <T> T postWait(ExecutorService executor, LiteRunnable<T> runnable)
+    private <T> T postWait(LiteRunnable<T> runnable)
     {
-        SQLiteDatabase database = executor == readExecutor ? this.getReadableSQLiteDatabase() : this.getWritableSQLiteDatabase();
+        SQLiteDatabase database = this.getWritableSQLiteDatabase();
         Callable<T> callable = () -> runnable.run(database);
         FutureTask<T> task = new FutureTask<T>(callable);
-        executor.submit(task);
+        this.writeExecutor.submit(task);
         try
         {
             return task.get(/*30, TimeUnit.SECONDS*/);

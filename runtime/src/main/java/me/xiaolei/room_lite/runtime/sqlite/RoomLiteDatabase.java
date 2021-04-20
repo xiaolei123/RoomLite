@@ -8,6 +8,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.annotations.dao.Dao;
-import me.xiaolei.room_lite.runtime.dao_proxy.handler.DaoProxyHandler;
 
 public abstract class RoomLiteDatabase
 {
@@ -149,7 +149,7 @@ public abstract class RoomLiteDatabase
      * @param <T>
      * @return
      */
-    public <T> T getDao(Class<?> daoClass)
+    public <T> T getDao(Class<T> daoClass)
     {
         if (!daoClass.isInterface() || !daoClass.isAnnotationPresent(Dao.class))
         {
@@ -158,12 +158,18 @@ public abstract class RoomLiteDatabase
         T dao = (T) daoCache.get(daoClass);
         if (dao == null)
         {
-            ClassLoader loader = daoClass.getClassLoader();
-            Object obj = Proxy.newProxyInstance(loader,
-                    new Class[]{daoClass},
-                    DaoProxyHandler.getHandler(this, this.database));
-            dao = (T) obj;
-            daoCache.put(daoClass, dao);
+            try
+            {
+                String className = daoClass.getSimpleName();
+                String implClassName = daoClass.getPackage().getName() + "." + className + "$$DaoImpl";
+                Class<T> daoImplClass = (Class<T>) Class.forName(implClassName);
+                Constructor<T> constructor = daoImplClass.getDeclaredConstructor(RoomLiteDatabase.class, LiteDataBase.class);
+                dao = (T) constructor.newInstance(this, this.database);
+                daoCache.put(daoClass, dao);
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
         }
         return dao;
     }

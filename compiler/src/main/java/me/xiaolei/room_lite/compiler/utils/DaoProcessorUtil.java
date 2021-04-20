@@ -479,7 +479,7 @@ public class DaoProcessorUtil
             {
                 TypeMirror generic = typeArguments.get(0);
                 builder.addStatement("$T sql = $S", String.class, sqlBuilder.toString());//String sql = "SELECT * FROM User WHERE 1=1 LIMIT 0,2000";
-                builder.addStatement("$T adapter = $T.getAdapter($T.class)", Global.ContainerAdapter, Global.Adapters, ClassName.get(generic));//;
+                builder.addStatement("$T adapter = $T.getAdapter($N.class)", Global.ContainerAdapter, Global.Adapters, type.asElement().toString());//;
                 builder.addCode("if (adapter == null)");//
                 builder.addCode("{");//
                 builder.addStatement("throw new $T(\"没有实现对应$T的ContainerAdapter支持\")", RuntimeException.class, ClassName.get(returnType));
