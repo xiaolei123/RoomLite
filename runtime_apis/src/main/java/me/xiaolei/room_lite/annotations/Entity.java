@@ -12,5 +12,13 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 public @interface Entity
 {
+    /**
+     * 表名
+     */
     String name() default "";
+
+    /**
+     * 索引
+     */
+    Index[] indices() default {};
 }

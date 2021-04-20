@@ -19,6 +19,11 @@ public interface EntityHelper
     public String getCreateSQL();
 
     /**
+     * 创建索引的SQL语句
+     */
+    public String[] getCreateIndexSQL();
+
+    /**
      * 从Cursor里自动取出对应的字段，并设置进Entity对象中
      */
     public Object fromCursor(Cursor cursor);

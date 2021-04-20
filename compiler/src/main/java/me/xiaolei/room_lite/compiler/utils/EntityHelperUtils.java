@@ -8,6 +8,7 @@ import com.squareup.javapoet.TypeName;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -17,6 +18,7 @@ import me.xiaolei.room_lite.SQLiteWriter;
 import me.xiaolei.room_lite.Suffix;
 import me.xiaolei.room_lite.annotations.Column;
 import me.xiaolei.room_lite.annotations.Entity;
+import me.xiaolei.room_lite.annotations.Index;
 import me.xiaolei.room_lite.annotations.PrimaryKey;
 import me.xiaolei.room_lite.compiler.Global;
 
@@ -179,6 +181,99 @@ public class EntityHelperUtils
         // sqlBuilder.append(")");
         builder.addStatement("sql += $S", ")");
         builder.addStatement("return sql");
+        return builder.build();
+    }
+
+    /**
+     * 创建索引
+     */
+    public static MethodSpec getCreateIndexSQL(TypeElement element)
+    {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("getCreateIndexSQL")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
+                .returns(String[].class);
+        // 获取表名
+        String tableName = ElementUtil.getTableName(element);
+        // 获取@Entity的注解
+        Entity entity = element.getAnnotation(Entity.class);
+        // 获取所有字段
+        List<VariableElement> fields = ElementUtil.getFields(element);
+        // 获取表注解上的索引
+        Index[] indices = entity.indices();
+        // 获取所有字段上的，并且加了索引的注解
+        List<VariableElement> columns = fields.stream().filter(varElement ->
+        {
+            Column column = varElement.getAnnotation(Column.class);
+            return column != null && column.index();
+        }).collect(Collectors.toList());
+        // 获取索引的数量
+        int indexCount = columns.size() + indices.length;
+        int index = 0;
+        // 生成对应数量的预备字符串占位
+        builder.addStatement("$T[] sqls = new $T[$L]", String.class, String.class, indexCount);
+
+        // 对字段上的注解进行索引SQL语句的生成
+        for (VariableElement columnElement : columns)
+        {
+            boolean unique = columnElement.getAnnotation(Column.class).unique();
+            String columnName = ElementUtil.getColumnName(columnElement);
+
+            StringBuilder indexSql = new StringBuilder()
+                    .append("CREATE ");
+            if (unique)
+            {
+                indexSql.append("UNIQUE ");
+            }
+            indexSql.append("INDEX ")
+                    .append(tableName)
+                    .append("_")
+                    .append(columnName)
+                    .append("_index")
+                    .append(" ON ")
+                    .append(tableName)
+                    .append("(`")
+                    .append(columnName)
+                    .append("`);");
+            builder.addStatement("sqls[$L] = $S", index++, indexSql.toString());
+        }
+        // 对表注解上的索引进行循环解析SQL语句的生成
+        for (Index t_index : indices)
+        {
+            // 字段名称
+            String[] columnNames = t_index.columnNames();
+            // 索引名称
+            String indexName = t_index.name().isEmpty() ? (tableName + "_index") : t_index.name();
+            // 是否唯一
+            boolean unique = t_index.unique();
+            // 构建加入索引的字段名
+            StringJoiner joiner = new StringJoiner(",");
+            // 加入索引的字段名
+            for (String columnName : columnNames)
+            {
+                joiner.add("`" + columnName + "`");
+            }
+            // SQL语句
+            StringBuilder indexSql = new StringBuilder().append("CREATE ");
+            // 是否唯一
+            if (unique)
+            {
+                indexSql.append("UNIQUE ");
+            }
+            // 构建SQL语句
+            indexSql.append("INDEX ")
+                    .append(indexName)
+                    .append(" ON ")
+                    .append(tableName)
+                    .append("(")
+                    .append(joiner)
+                    .append(");");
+            // 生成索引部分代码
+            builder.addStatement("sqls[$L] = $S", index++, indexSql.toString());
+        }
+
+        builder.addStatement("return sqls");
+
         return builder.build();
     }
 
@@ -425,7 +520,7 @@ public class EntityHelperUtils
 
         builder.addStatement("if (obj == null) return 0");
         builder.addStatement("if (!(obj instanceof $N)) throw new Exception(obj + \" not instanceof $N\")", entityType, entityType);
-        
+
         builder.addStatement("ContentValues obj_values = this.toContentValues(obj)");
         builder.addStatement("sqLite.insert($S,null,obj_values)", tableName);
         builder.addStatement("return 1");

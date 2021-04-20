@@ -4,21 +4,18 @@ import java.util.Date;
 
 import me.xiaolei.room_lite.annotations.Column;
 import me.xiaolei.room_lite.annotations.Entity;
+import me.xiaolei.room_lite.annotations.Index;
 import me.xiaolei.room_lite.annotations.PrimaryKey;
 
-@Entity(name = "User")
+@Entity(name = "User", indices = {
+        @Index(columnNames = {"id", "name"}),
+        @Index(name = "index2", columnNames = {"id", "name"}),
+        @Index(name = "index3", columnNames = {"id", "name"}, unique = true),
+})
 public class User
 {
-    public User()
-    {
-    }
 
-    public User(int id)
-    {
-        this.id = id;
-    }
-
-    @Column(type = Column.SQLType.INTEGER, notNull = true, unique = true, defaultValue = "0")
+    @Column(type = Column.SQLType.INTEGER, notNull = true, unique = true, defaultValue = "0", index = true)
     @PrimaryKey(autoGenerate = true)
     public int id;
 

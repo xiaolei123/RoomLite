@@ -87,6 +87,8 @@ public class EntityProcessor extends BaseProcessor
         MethodSpec getTableName = EntityHelperUtils.getTableName(element);
         // 实现获取创建表语句
         MethodSpec getCreateSQL = EntityHelperUtils.getCreateSQL(element);
+        // 创建索引
+        MethodSpec getCreateIndexSQL = EntityHelperUtils.getCreateIndexSQL(element);
         // 创建实例
         MethodSpec newInstance = EntityHelperUtils.fromCursor(element);
         // 对象转换成contentValues
@@ -106,6 +108,7 @@ public class EntityProcessor extends BaseProcessor
         helperClass.addMethod(constructor.build());
         helperClass.addMethod(getTableName);
         helperClass.addMethod(getCreateSQL);
+        helperClass.addMethod(getCreateIndexSQL);
         helperClass.addMethod(newInstance);
         helperClass.addMethod(toContentValues);
         helperClass.addMethod(setContentValue);
