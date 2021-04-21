@@ -92,7 +92,10 @@ public class User
     public Bitmap bitmap;
 }
 ```
-
+ - 声明字段为主键（并且自增长）,自增长只有在类型为数字类型的时候才会生效
+```java
+@PrimaryKey(autoGenerate = true)
+```
  - 字段 NOT NULL
 ```java
 @Column(notNull = true)
