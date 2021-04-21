@@ -1,7 +1,7 @@
 # RoomLite
 
 #### 介绍
-基于Android平台下的SQLite数据库ORM
+Android平台下，一个SQLite数据库ORM的船新版本。
 
 #### 获取
 
@@ -17,14 +17,14 @@ allprojects {
 ```gradle
 java:
 dependencies {
-    annotationProcessor 'com.github.xiaolei123:compiler:Tag'
-    implementation 'com.github.xiaolei123:runtime:Tag'
+    annotationProcessor 'com.github.xiaolei123:compiler:+'
+    implementation 'com.github.xiaolei123:runtime:+'
 }
 
 kotlin:
 dependencies {
-    kapt 'com.github.xiaolei123:compiler:Tag'
-    implementation 'com.github.xiaolei123:runtime:Tag'
+    kapt 'com.github.xiaolei123:compiler:+'
+    implementation 'com.github.xiaolei123:runtime:+'
 }
 
 
@@ -35,7 +35,7 @@ dependencies {
 
 #### 使用说明
 
-1. 创建DataBase
+ - 创建数据库
 ```java
 public static class DataBase extends RoomLiteDatabase
 {
@@ -75,7 +75,8 @@ public static class DataBase extends RoomLiteDatabase
 }
 ```
 
-2. 创建Entity
+ - 在数据库里创建表
+
 ```java
 @Entity(name = "User")
 public class User
@@ -91,7 +92,47 @@ public class User
 }
 ```
 
-3. 创建Dao
+ -字段 NOT NULL
+```java
+@Column(notNull = true)
+```
+
+ -字段唯一 UNIQUE
+
+```java
+@Column(unique = true)
+```
+
+ -默认值 DEFAULT
+```java
+@Column( defaultValue = "0")
+```
+
+ -忽略某个字段
+```java
+@Ignore
+public Bitmap bitmap;
+```
+
+ - 创建索引 方式一
+
+```java
+@Entity(name = "User", indices = {
+        @Index(columnNames = {"id", "name"}),
+        @Index(name = "index2", columnNames = {"id", "name"}),
+        @Index(name = "index3", columnNames = {"id", "name"}, unique = true),
+})
+```
+
+ - 创建索引 方式二
+
+```java
+@Column(index = true)
+```
+
+
+
+ - 创建Dao
 
 ```java
 @Dao
@@ -111,7 +152,7 @@ public interface UserDao
 }
 ```
 
-4. 获取DataBase实例,获得Dao
+ - 获取DataBase实例,获得Dao
 
 ```java
 DataBase dataBase = RoomLite.build(DataBase.class);
@@ -121,75 +162,58 @@ UserDao dao = dataBase.getDao(UserDao.class);
  - 增
 
 ```java
-@Dao
-public interface UserDao
-{
-    @Insert
-    public int addUser(User user);
-
-    @Insert
-    public void addUser(User[] users);
-    
-    @Insert
-    public void addUserList(List<User> users);
-}
+@Insert
+public int addUser(User user);
+@Insert
+public void addUser(User[] users);
+@Insert
+public void addUserList(List<User> users);
 ```
 
  - 删除
 ```java
-@Dao
-public interface UserDao
-{
-    @Delete
-    public int deleteUser(User user);
-
-    @Delete
-    public void deleteUser(User[] users);
-    
-    @Delete
-    public void deleteUserList(List<User> users);
-}
+@Delete
+public int deleteUser(User user);
+@Delete
+public void deleteUser(User[] users);
+@Delete
+public void deleteUserList(List<User> users);
 ```
 
  - 改
 ```java
-@Dao
-public interface UserDao
-{
-    @Update
-    public int updateUser(User user);
-
-    @Update
-    public void updateUser(User[] users);
-    
-    @Update
-    public void updateUserList(List<User> users);
-}
+@Update
+public int updateUser(User user);
+@Update
+public void updateUser(User[] users);
+@Update
+public void updateUserList(List<User> users);
 ```
 
  - 查
 ```java
-@Dao
-public interface UserDao
-{
-    // 查询所有
-    @Query(entity = User.class)
-    public List<User> queryAll();
+// 查询所有
+@Query(entity = User.class)
+public List<User> queryAll();
 
-    // 查询第一个
-    @Query(entity = User.class, limit = "0,1")
-    public User query();
+// 查询第一个
+@Query(entity = User.class, limit = "0,1")
+public User query();
 
-    // 查询总数
-    @Query(what = "count(id)", entity = User.class)
-    public int queryCount();
+// 查询总数
+@Query(what = "count(id)", entity = User.class)
+public int queryCount();
 
-    // 查询所有的名字
-    @Query(what = "name", entity = User.class)
-    public String[] queryNames();
+// 查询所有的名字
+@Query(what = "name", entity = User.class)
+public String[] queryNames();
 
-    // 模糊查询
-    @Query(entity = User.class, whereClause = "name like ?")
-    public User[] querySearch(String name);
-}
+// 模糊查询
+@Query(entity = User.class, whereClause = "name like ?")
+public User[] querySearch(String name);
+```
+
+ - 查询分页
+```java
+@Query(entity = User.class, whereClause = "name like ?",limit="0,30")
 ```
