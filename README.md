@@ -116,6 +116,7 @@ public Bitmap bitmap;
 ```
 
  - 支持自定义字段
+ 
 第一步：在表类里声明自定义类型
 ```java
 @Entity(name = "User")
@@ -124,7 +125,7 @@ public class User
     public Date date;
 }
 ```
-第二部：继承对应的转换器
+第二步：继承对应的转换器
 ```java
 public class DateConvert extends ToLongConvert<Date>
 {
