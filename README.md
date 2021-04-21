@@ -262,5 +262,23 @@ public User[] querySearch(String name);
 
  - 查询分页
 ```java
-@Query(entity = User.class, whereClause = "name like ?",limit="0,30")
+@Query(entity = User.class, whereClause = "name like ?",limit=@Limit(index = "0", maxLength = "30"))
 ```
+
+ - 查询占位符
+```java
+@Query(entity = User.class, whereClause = "name like ?",limit=@Limit(index = "0", maxLength = "?"))
+```
+
+ - 查询排序-正序
+```java
+@Query(entity = User.class, orderBy = @OrderBy(columnNames = {"id"}, type = OrderBy.Type.ASC))
+```
+
+ - 查询排序-倒序
+```java
+@Query(entity = User.class, orderBy = @OrderBy(columnNames = {"id"}, type = OrderBy.Type.DESC))
+```
+
+
+> End.
