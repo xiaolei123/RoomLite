@@ -1,6 +1,7 @@
 # RoomLite
 
 #### 介绍
+
 Android平台下，一个SQLite数据库ORM的船新版本。
 
 #### 获取
@@ -92,26 +93,68 @@ public class User
 }
 ```
 
- -字段 NOT NULL
+ - 字段 NOT NULL
 ```java
 @Column(notNull = true)
 ```
 
- -字段唯一 UNIQUE
+ - 字段唯一 UNIQUE
 
 ```java
 @Column(unique = true)
 ```
 
- -默认值 DEFAULT
+ - 默认值 DEFAULT
 ```java
 @Column( defaultValue = "0")
 ```
 
- -忽略某个字段
+ - 忽略某个字段
 ```java
 @Ignore
 public Bitmap bitmap;
+```
+
+ - 支持自定义字段
+第一步：在表类里声明自定义类型
+```java
+@Entity(name = "User")
+public class User
+{
+    public Date date;
+}
+```
+第二部：继承对应的转换器
+```java
+public class DateConvert extends ToLongConvert<Date>
+{
+    public DateConvert()
+    {
+        super(Date.class);
+    }
+    @Override
+    public Long convertToLong(Date javaObj)
+    {
+        Date date = (Date) javaObj;
+        if (javaObj == null) 
+            return null;
+        return date.getTime();
+    }
+    /**
+     * 从数据库的Cursor获取数据,并转换成对应 javaType 类型的数据
+     *
+     * @param value
+     */
+    @Override
+    public Date cursorToJavaObject(long value)
+    {
+        return new Date(value);
+    }
+}
+```
+第三步：向RoomLite注册转换器
+```java
+RoomLite.addConvert(new DateConvert());
 ```
 
  - 创建索引 方式一
