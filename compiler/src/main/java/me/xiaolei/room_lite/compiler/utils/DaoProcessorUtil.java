@@ -6,13 +6,14 @@ import com.squareup.javapoet.MethodSpec;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -24,6 +25,8 @@ import javax.lang.model.util.Types;
 
 import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.annotations.Entity;
+import me.xiaolei.room_lite.annotations.Limit;
+import me.xiaolei.room_lite.annotations.OrderBy;
 import me.xiaolei.room_lite.annotations.dao.Delete;
 import me.xiaolei.room_lite.annotations.dao.Insert;
 import me.xiaolei.room_lite.annotations.dao.Query;
@@ -380,16 +383,63 @@ public class DaoProcessorUtil
         // 查询条件
         String where = query.whereClause();
         // 翻页条件
-        String limit = query.limit();
+        Limit limit = query.limit();
+        // 分组
+        String[] groupBy = query.groupBy();
+        // 排序
+        OrderBy orderBy = query.orderBy();
+
         // 生成查询语句
-        String querySql = sqlBuilder.append("SELECT ")
+        sqlBuilder.append("SELECT ")
                 .append(what)
                 .append(" FROM ")
                 .append(tableName)
                 .append(" WHERE ")
-                .append(where)
-                .append(" LIMIT ")
-                .append(limit).toString();
+                .append(where);
+        // groupBy
+        if (groupBy.length > 0)
+        {
+            StringJoiner groupByJoiner = new StringJoiner(",");
+            for (String columnName : groupBy)
+            {
+                if (columnName.isEmpty())
+                    throw new RuntimeException(method + " groupBy 中，字符串不能为空字符串");
+                groupByJoiner.add(columnName);
+            }
+            sqlBuilder.append(" GROUP BY ").append(groupByJoiner.toString());
+        }
+        // orderBy
+        if (orderBy.columnNames().length > 0)
+        {
+            StringJoiner orderByJoiner = new StringJoiner(",");
+            String[] columnNames = orderBy.columnNames();
+            for (String columnName : columnNames)
+            {
+                if (columnName.isEmpty())
+                    throw new RuntimeException(method + " orderBy.columnNames 中，字符串不能为空字符串");
+                orderByJoiner.add(columnName);
+            }
+            sqlBuilder.append(" ORDER BY ").append(orderByJoiner.toString()).append(" ").append(orderBy.type());
+        }
+        // limit
+        if (!limit.index().isEmpty() && !limit.maxLength().isEmpty())
+        {
+            Pattern pattern = Pattern.compile("([0-9]+)|\\?");
+            String index = limit.index();
+            String maxLength = limit.maxLength();
+            Matcher indexMatcher = pattern.matcher(index);
+            Matcher maxLengthMatcher = pattern.matcher(maxLength);
+            if (!indexMatcher.matches())
+            {
+                throw new RuntimeException(method + "" + limit + " index的值必须是数字或者是?占位符");
+            }
+            if (!maxLengthMatcher.matches())
+            {
+                throw new RuntimeException(method + "" + limit + " maxLength的值必须是数字或者是?占位符");
+            }
+            sqlBuilder.append(" LIMIT ").append(limit.index()).append(",").append(limit.maxLength());
+        }
+        String querySql = sqlBuilder.toString();
         // 拼接参数
         StringJoiner joiner = new StringJoiner(",");
         for (VariableElement param : params)

@@ -5,6 +5,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import me.xiaolei.room_lite.annotations.Limit;
+import me.xiaolei.room_lite.annotations.OrderBy;
+
 /**
  * 查询的DAO<br/>
  * <br/>
@@ -17,11 +20,33 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface Query
 {
+    /**
+     * 查询什么
+     */
     String what() default "*";
 
+    /**
+     * 在哪个表查询
+     */
     Class<?> entity();
 
+    /**
+     * where语句
+     */
     String whereClause() default "1=1";
 
-    String limit() default "0,2000";
+    /**
+     * 分页
+     */
+    Limit limit() default @Limit(index = "", maxLength = "");
+
+    /**
+     * 分组
+     */
+    String[] groupBy() default {};
+
+    /**
+     * 排序
+     */
+    OrderBy orderBy() default @OrderBy(columnNames = {});
 }

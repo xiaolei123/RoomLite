@@ -4,6 +4,8 @@ package me.xiaolei.roomlite.room_lite;
 import java.util.Date;
 import java.util.List;
 
+import me.xiaolei.room_lite.annotations.Limit;
+import me.xiaolei.room_lite.annotations.OrderBy;
 import me.xiaolei.room_lite.annotations.dao.Dao;
 import me.xiaolei.room_lite.annotations.dao.Delete;
 import me.xiaolei.room_lite.annotations.dao.Insert;
@@ -51,7 +53,7 @@ public interface UserDao
     int update(User single, User[] array, List<User> list);
 
 
-    @Query(what = "date", entity = User.class, limit = "0,1")
+    @Query(what = "date", entity = User.class, limit = @Limit(index = "0", maxLength = "1"))
     public Date getFirst();
 
     // 查询所有
@@ -59,14 +61,14 @@ public interface UserDao
     public List<User> queryAll();
 
     // 查询第一个
-    @Query(entity = User.class, limit = "0,1")
+    @Query(entity = User.class, limit = @Limit(index = "0", maxLength = "1"))
     public User query();
 
     // 查询总数
     @Query(what = "count(id)", entity = User.class)
     public int queryCount();
 
-    @Query(what = "id", entity = User.class, limit = "0,1")
+    @Query(what = "id", entity = User.class, limit = @Limit(index = "0", maxLength = "1"))
     public int firstId();
 
     // 查询所有的名字
@@ -83,4 +85,7 @@ public interface UserDao
 
     @Query(what = "count(*)", entity = User.class)
     public Integer count();
+
+    @Query(what = "id", entity = User.class, whereClause = "name=?", limit = @Limit(index = "0", maxLength = "30"), groupBy = {"id", "name"}, orderBy = @OrderBy(columnNames = {"id"}, type = OrderBy.Type.DESC))
+    public User[] users();
 }
