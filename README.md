@@ -36,7 +36,7 @@ dependencies {
 
 #### 使用说明
 
- - 创建数据库
+##### 1.创建数据库
 ```java
 public static class DataBase extends RoomLiteDatabase
 {
@@ -76,7 +76,7 @@ public static class DataBase extends RoomLiteDatabase
 }
 ```
 
- - 在数据库里创建表
+##### 2.在数据库里创建表
 
 ```java
 @Entity(name = "User")
@@ -92,33 +92,33 @@ public class User
     public Bitmap bitmap;
 }
 ```
- - 声明字段为主键（并且自增长）,自增长只有在类型为数字类型的时候才会生效
+###### 2.1声明字段为主键（并且自增长）,自增长只有在类型为数字类型的时候才会生效
 ```java
 @PrimaryKey(autoGenerate = true)
 ```
- - 字段 NOT NULL
+###### 2.2字段 NOT NULL
 ```java
 @Column(notNull = true)
 ```
 
- - 字段唯一 UNIQUE
+###### 2.3字段唯一 UNIQUE
 
 ```java
 @Column(unique = true)
 ```
 
- - 默认值 DEFAULT
+###### 2.4默认值 DEFAULT
 ```java
 @Column( defaultValue = "0")
 ```
 
- - 忽略某个字段
+###### 2.5忽略某个字段
 ```java
 @Ignore
 public Bitmap bitmap;
 ```
 
- - 支持自定义字段
+###### 2.6支持自定义字段
  
 第一步：在表类里声明自定义类型
 ```java
@@ -161,7 +161,7 @@ public class DateConvert extends ToLongConvert<Date>
 RoomLite.addConvert(new DateConvert());
 ```
 
- - 创建索引 方式一
+##### 3.创建索引 方式一
 
 ```java
 @Entity(name = "User", indices = {
@@ -171,7 +171,7 @@ RoomLite.addConvert(new DateConvert());
 })
 ```
 
- - 创建索引 方式二
+##### 4.创建索引 方式二
 
 ```java
 @Column(index = true)
@@ -179,7 +179,7 @@ RoomLite.addConvert(new DateConvert());
 
 
 
- - 创建Dao
+##### 5.创建Dao
 
 ```java
 @Dao
@@ -199,14 +199,16 @@ public interface UserDao
 }
 ```
 
- - 获取DataBase实例,获得Dao
+##### 6.获取DataBase实例,获得Dao
 
 ```java
 DataBase dataBase = RoomLite.build(DataBase.class);
 UserDao dao = dataBase.getDao(UserDao.class);
 ```
 
- - 增
+##### 7.增删改查使用
+
+###### 7.1增
 
 ```java
 @Insert
@@ -217,7 +219,7 @@ public void addUser(User[] users);
 public void addUserList(List<User> users);
 ```
 
- - 删除
+###### 7.2删除
 ```java
 @Delete
 public int deleteUser(User user);
@@ -227,7 +229,7 @@ public void deleteUser(User[] users);
 public void deleteUserList(List<User> users);
 ```
 
- - 改
+###### 7.3改
 ```java
 @Update
 public int updateUser(User user);
@@ -237,7 +239,7 @@ public void updateUser(User[] users);
 public void updateUserList(List<User> users);
 ```
 
- - 查
+###### 7.4查
 ```java
 // 查询所有
 @Query(entity = User.class)
@@ -260,22 +262,22 @@ public String[] queryNames();
 public User[] querySearch(String name);
 ```
 
- - 查询分页
+###### 7.5查询分页
 ```java
 @Query(entity = User.class, whereClause = "name like ?",limit=@Limit(index = "0", maxLength = "30"))
 ```
 
- - 查询占位符
+###### 7.6查询占位符
 ```java
 @Query(entity = User.class, whereClause = "name like ?",limit=@Limit(index = "0", maxLength = "?"))
 ```
 
- - 查询排序-正序
+###### 7.7查询排序-正序
 ```java
 @Query(entity = User.class, orderBy = @OrderBy(columnNames = {"id"}, type = OrderBy.Type.ASC))
 ```
 
- - 查询排序-倒序
+###### 7.8查询排序-倒序
 ```java
 @Query(entity = User.class, orderBy = @OrderBy(columnNames = {"id"}, type = OrderBy.Type.DESC))
 ```
