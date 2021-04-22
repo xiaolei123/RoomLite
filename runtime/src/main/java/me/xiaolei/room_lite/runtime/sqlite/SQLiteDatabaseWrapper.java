@@ -28,7 +28,7 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
 
     public SQLiteDatabaseWrapper(String dbPath, String name, int version)
     {
-        super(new CustomContentWrap(InitProvider.context, dbPath), name, null, version);
+        super(new CustomContentWrap(DataBaseProvider.context, dbPath), name, null, version);
     }
 
     @Override

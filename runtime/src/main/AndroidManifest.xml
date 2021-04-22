@@ -4,8 +4,8 @@
 
     <application>
         <provider
-            android:name="me.xiaolei.room_lite.runtime.sqlite.InitProvider"
-            android:authorities="${applicationId}.myroom.init"
+            android:name="me.xiaolei.room_lite.runtime.sqlite.DataBaseProvider"
+            android:authorities="${applicationId}.room_lite.provider"
             android:exported="false" />
     </application>
 </manifest>

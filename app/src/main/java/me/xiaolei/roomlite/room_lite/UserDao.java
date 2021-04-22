@@ -1,6 +1,8 @@
 package me.xiaolei.roomlite.room_lite;
 
 
+import androidx.lifecycle.LiveData;
+
 import java.util.Date;
 import java.util.List;
 
@@ -81,4 +83,7 @@ public interface UserDao
 
     @Query(what = "date", entity = User.class)
     List<Date> dates();
+
+    @Query(entity = User.class)
+    LiveData<List<User>> asyncAll();
 }

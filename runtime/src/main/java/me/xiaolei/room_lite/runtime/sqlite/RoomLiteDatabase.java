@@ -2,6 +2,7 @@ package me.xiaolei.room_lite.runtime.sqlite;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -26,6 +27,7 @@ public abstract class RoomLiteDatabase
     private final Map<Class<?>, Object> daoCache = new ConcurrentHashMap<>();
     private final LiteDataBase database;
     private final Map<Class<?>, EntityHelper> helperCache = new HashMap<>();
+    private final Uri databaseUri;
 
     /**
      * 初始化数据库，
@@ -34,7 +36,7 @@ public abstract class RoomLiteDatabase
      */
     public RoomLiteDatabase(String dbName)
     {
-        this(dbName, InitProvider.context.getDir("databases", Context.MODE_PRIVATE));
+        this(dbName, DataBaseProvider.context.getDir("databases", Context.MODE_PRIVATE));
         Class<?>[] entities = this.getEntities();
         if (entities == null || entities.length == 0)
             throw new RuntimeException(this.getClass().getCanonicalName() + "的 getEntities() 函数返回的Entities不可以为空");
@@ -62,9 +64,11 @@ public abstract class RoomLiteDatabase
      */
     public RoomLiteDatabase(String dbName, File dbDir)
     {
+        databaseUri = Uri.parse(DataBaseProvider.authorities + "?tableName=" + dbName);
         this.dbName = dbName;
         this.dbDir = dbDir;
         this.database = new LiteDataBase(this);
+        DataBaseProvider.offerLiteDataBase(this.dbName, this.database);
     }
 
     /**
