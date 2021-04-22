@@ -1,5 +1,6 @@
 package me.xiaolei.room_lite.runtime.sqlite;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -27,6 +28,7 @@ public abstract class RoomLiteDatabase
     private final Map<Class<?>, Object> daoCache = new ConcurrentHashMap<>();
     private final LiteDataBase database;
     private final Map<Class<?>, EntityHelper> helperCache = new HashMap<>();
+    private final ContentResolver contentResolver;
     private final Uri databaseUri;
 
     /**
@@ -64,7 +66,8 @@ public abstract class RoomLiteDatabase
      */
     public RoomLiteDatabase(String dbName, File dbDir)
     {
-        databaseUri = Uri.parse(DataBaseProvider.authorities + "?tableName=" + dbName);
+        this.contentResolver = DataBaseProvider.context.getContentResolver();
+        this.databaseUri = Uri.parse(DataBaseProvider.authorities + "?tableName=" + dbName);
         this.dbName = dbName;
         this.dbDir = dbDir;
         this.database = new LiteDataBase(this);
@@ -87,6 +90,16 @@ public abstract class RoomLiteDatabase
         return dbDir;
     }
 
+
+    public ContentResolver getContentResolver()
+    {
+        return contentResolver;
+    }
+
+    public Uri getDatabaseUri()
+    {
+        return databaseUri;
+    }
 
     /**
      * 初始化

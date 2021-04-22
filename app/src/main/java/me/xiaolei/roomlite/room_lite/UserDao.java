@@ -86,4 +86,22 @@ public interface UserDao
 
     @Query(entity = User.class)
     LiveData<List<User>> asyncAll();
+
+    @Query(entity = User.class)
+    LiveData<List<Integer>> asyncAll2();
+
+    @Query(entity = User.class)
+    LiveData<String> asyncAll3();
+
+    @Query(entity = User.class)
+    LiveData<String[]> asyncAll4();
+
+    @Query(entity = User.class)
+    LiveData<Byte> asyncAll5();
+
+    @Query(entity = User.class)
+    LiveData<byte[]> asyncAll6();
+
+    @Query(entity = User.class)
+    LiveData<Byte[]> asyncAll7();
 }

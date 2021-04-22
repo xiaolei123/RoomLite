@@ -503,7 +503,7 @@ public class DaoProcessorUtil
             queryBase(builder, entityClass, returnType);
             builder.addStatement("return value");
             builder.addCode("}");
-            builder.addStatement("return ($T) $T.defaultValue($T.class)", ClassName.get(returnType),Global.RoomLiteUtil, ClassName.get(returnType));
+            builder.addStatement("return ($T) $T.defaultValue($T.class)", ClassName.get(returnType), Global.RoomLiteUtil, ClassName.get(returnType));
             // catch
             builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
         } else if (returnType instanceof DeclaredType)
@@ -520,11 +520,23 @@ public class DaoProcessorUtil
                 implClass.addMethod(createAdapterMethod(invokeMethodName, generic, entityClass, querySql));
                 // 再生成调用函数的代码
                 builder.addStatement("$T adapter = $T.getAdapter($T.class)", Global.Adapter, Global.Adapters, ClassName.get(returnElement));
-                builder.addCode("$T processor = args ->", Global.Processor);
+
+                builder.addCode("$T processor = new $T()", Global.Processor, Global.Processor);//
                 builder.addCode("{");
-                builder.addStatement("return this.$N(args)", invokeMethodName);
+                builder.addCode("@Override\n");
+                builder.addCode("public Object process($T cursor)", Global.Cursor);
+                builder.addCode("{");
+                builder.addStatement("return $N(cursor)", invokeMethodName);
+                builder.addCode("}");
+                builder.addCode("@Override\n");
+                builder.addCode("public $T queryCursor($T sql, $T args)", Global.Cursor, String.class, String[].class);
+                builder.addCode("{");
+                builder.addStatement("return sqLite.rawQuery(sql, args)");
+                builder.addCode("}");
                 builder.addStatement("}");
-                builder.addStatement("return ($T) adapter.process(processor, $T.class, $N)", ClassName.get(type), ClassName.get(typeUtil.erasure(generic)), argsName);
+
+                builder.addStatement("$T sql = $S", String.class, querySql);
+                builder.addStatement("return ($T) adapter.process(processor,this.database,$T.class, sql, $N)", ClassName.get(type), ClassName.get(typeUtil.erasure(generic)), argsName);
             } else
             {
                 // 生成查询结果代码 try cache
@@ -550,14 +562,11 @@ public class DaoProcessorUtil
     {
         MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addModifiers(Modifier.PRIVATE)
-                .addParameter(String[].class, "args")
+                .addParameter(Global.Cursor, "cursor")
                 .returns(ClassName.get(returnType));
 
         if (TypeUtil.isArray(returnType)) // 是数组
         {
-            // 生成查询结果代码 try cache
-            builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, "args");
-            builder.addCode("{");
             // 获取数组的类型
             TypeMirror componentType = ((ArrayType) returnType).getComponentType();
             builder.addStatement("$T[] results = new $T[cursor.getCount()]", ClassName.get(componentType), ClassName.get(componentType));//;
@@ -565,8 +574,6 @@ public class DaoProcessorUtil
             builder.addStatement("results[cursor.getPosition()] = value");
             builder.addCode("}");
             builder.addStatement("return results");
-            // catch
-            builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
         } else if (TypeUtil.isList(returnType)) // List
         {
             DeclaredType type = ((DeclaredType) returnType);
@@ -582,42 +589,31 @@ public class DaoProcessorUtil
                 throw new RuntimeException(" List不支持通配符");
             }
             // 生成查询结果代码 try cache
-            builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, "args");
-            builder.addCode("{");
             builder.addStatement("$T<$T> results = new $T()", List.class, ClassName.get(componentType), ArrayList.class);
             queryBase(builder, entityClass, componentType);
             builder.addStatement("results.add(value)");
             builder.addCode("}");
             builder.addStatement("return results");
-            // catch
-            builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
         } else if (TypeUtil.isPrimitiveOrBox(returnType) || returnType.equals(entityClass)) // 是基础类型
         {
             // 生成查询结果代码 try cache
-            builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, "args");
-            builder.addCode("{");
             queryBase(builder, entityClass, returnType);
             builder.addStatement("return value");
             builder.addCode("}");
             builder.addStatement("return ($T) $T.defaultValue($T.class)", ClassName.get(returnType), Global.RoomLiteUtil, ClassName.get(returnType));
             // catch
-            builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
         } else if (returnType instanceof DeclaredType)
         {
             // 生成查询结果代码 try cache
-            builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, "args");
-            builder.addCode("{");
             queryBase(builder, entityClass, returnType);
             builder.addStatement("return value");
             builder.addCode("}");
             builder.addStatement("return ($T)$T.defaultValue($T.class)", ClassName.get(returnType), Global.RoomLiteUtil, ClassName.get(returnType));
             // catch
-            builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
         } else
         {
             builder.addStatement("throw new $T($S)", RuntimeException.class, "RooLite尚未实现对" + returnType + "的支持");
         }
-
         return builder.build();
     }
 
