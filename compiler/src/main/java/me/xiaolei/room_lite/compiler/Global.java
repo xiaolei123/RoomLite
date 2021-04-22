@@ -29,6 +29,7 @@ public class Global
     public static ClassName LiteDataBase = ClassName.get("me.xiaolei.room_lite.runtime.sqlite", "LiteDataBase");
     public static ClassName RoomLiteDatabase = ClassName.get("me.xiaolei.room_lite.runtime.sqlite", "RoomLiteDatabase");
     public static ClassName RoomLiteUtil = ClassName.get("me.xiaolei.room_lite.runtime.util", "RoomLiteUtil");
-    public static ClassName ContainerAdapter = ClassName.get("me.xiaolei.room_lite.runtime.adapters", "ContainerAdapter");
+    public static ClassName Adapter = ClassName.get("me.xiaolei.room_lite.runtime.adapters", "Adapter");
     public static ClassName Adapters = ClassName.get("me.xiaolei.room_lite.runtime.adapters", "Adapters");
+    public static ClassName Processor = ClassName.get("me.xiaolei.room_lite.runtime.adapters", "Processor");
 }

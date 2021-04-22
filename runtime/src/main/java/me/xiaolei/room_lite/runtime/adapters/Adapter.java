@@ -12,11 +12,11 @@ import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
  * 用于支持自定义类型，比如：List&lt;T><br/>
  * <br/>
  */
-public abstract class ContainerAdapter<T>
+public abstract class Adapter<T>
 {
     private final Class<T> klass;
 
-    public ContainerAdapter(Class<T> klass)
+    public Adapter(Class<T> klass)
     {
         this.klass = klass;
     }
@@ -26,5 +26,5 @@ public abstract class ContainerAdapter<T>
         return this.klass;
     }
 
-    public abstract T newInstance(RoomLiteDatabase liteDatabase, SQLiteReader database, Type genericType, String sql, String[] args);
+    public abstract T process(Processor processor, Type generic, String[] args);
 }

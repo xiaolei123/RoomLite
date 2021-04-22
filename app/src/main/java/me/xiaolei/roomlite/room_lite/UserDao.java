@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 
 import me.xiaolei.room_lite.annotations.Limit;
-import me.xiaolei.room_lite.annotations.OrderBy;
 import me.xiaolei.room_lite.annotations.dao.Dao;
 import me.xiaolei.room_lite.annotations.dao.Delete;
 import me.xiaolei.room_lite.annotations.dao.Insert;
@@ -53,39 +52,33 @@ public interface UserDao
     int update(User single, User[] array, List<User> list);
 
 
-    @Query(what = "date", entity = User.class, limit = @Limit(index = "0", maxLength = "1"))
-    public Date getFirst();
-
-    // 查询所有
     @Query(entity = User.class)
-    public List<User> queryAll();
+    User querySingle();
 
-    // 查询第一个
     @Query(entity = User.class, limit = @Limit(index = "0", maxLength = "1"))
-    public User query();
+    User querySingle1();
 
-    // 查询总数
-    @Query(what = "count(id)", entity = User.class)
-    public int queryCount();
-
-    @Query(what = "id", entity = User.class, limit = @Limit(index = "0", maxLength = "1"))
-    public int firstId();
-
-    // 查询所有的名字
-    @Query(what = "name", entity = User.class)
-    public String[] queryNames();
-
-    // 模糊查询
     @Query(entity = User.class, whereClause = "name like ?")
-    public User[] querySearch(String name);
+    User querySingle2(String like);
 
-    // 模糊查询
     @Query(entity = User.class)
-    public Date[] querySearch();
+    User[] queryArray();
+
+    @Query(entity = User.class, limit = @Limit(index = "0", maxLength = "3"))
+    User[] queryArray1();
+
+    @Query(entity = User.class, whereClause = "name like ?")
+    User[] queryArray2(String like);
 
     @Query(what = "count(*)", entity = User.class)
-    public Integer count();
+    int count();
 
-    @Query(what = "id", entity = User.class, whereClause = "name=?", limit = @Limit(index = "0", maxLength = "30"), groupBy = {"id", "name"}, orderBy = @OrderBy(columnNames = {"id"}, type = OrderBy.Type.DESC))
-    public User[] users();
+    @Query(what = "name", entity = User.class, limit = @Limit(index = "0", maxLength = "10"))
+    String[] names();
+
+    @Query(what = "name", entity = User.class, limit = @Limit(index = "0", maxLength = "10"))
+    List<String> names2();
+
+    @Query(what = "date", entity = User.class)
+    List<Date> dates();
 }

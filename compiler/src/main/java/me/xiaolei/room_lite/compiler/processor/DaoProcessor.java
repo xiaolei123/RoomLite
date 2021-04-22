@@ -154,9 +154,8 @@ public class DaoProcessor extends BaseProcessor
                     processorUtil.update(builder, method, update, params, returnType);
                 } else if (query != null)
                 {
-                    processorUtil.query(builder, method, query, params, returnType);
+                    processorUtil.query(implClass, builder, method, query, params, returnType);
                 }
-
                 implClass.addMethod(builder.build());
             }
         }

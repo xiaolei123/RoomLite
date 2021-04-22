@@ -3,24 +3,17 @@ package me.xiaolei.room_lite.runtime.adapters;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.xiaolei.room_lite.runtime.adapters.impl.ListAdapter;
-
 public class Adapters
 {
-    private static final Map<Class<?>, ContainerAdapter<?>> adapters = new HashMap<>();
-
-    static
-    {
-        addAdapter(new ListAdapter());
-    }
-
-    public static void addAdapter(ContainerAdapter<?> adapter)
+    private static final Map<Class<?>, Adapter<?>> adapters = new HashMap<>();
+    
+    public static void addAdapter(Adapter<?> adapter)
     {
         Class<?> type = adapter.getType();
         adapters.put(type, adapter);
     }
 
-    public static ContainerAdapter<?> getAdapter(Class<?> klass)
+    public static Adapter<?> getAdapter(Class<?> klass)
     {
         return adapters.get(klass);
     }

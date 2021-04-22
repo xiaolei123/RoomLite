@@ -1,5 +1,6 @@
 package me.xiaolei.roomlite.room_lite;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import me.xiaolei.room_lite.annotations.Column;
@@ -31,4 +32,22 @@ public class User
     public char x_char;
     public Byte[] x_byte_array;
     public Date date;
+
+    @Override
+    public String toString()
+    {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", x_short=" + x_short +
+                ", x_byte=" + x_byte +
+                ", x_double=" + x_double +
+                ", x_float=" + x_float +
+                ", x_long=" + x_long +
+                ", x_bool=" + x_bool +
+                ", x_char=" + x_char +
+                ", x_byte_array=" + Arrays.toString(x_byte_array) +
+                ", date=" + date +
+                '}';
+    }
 }

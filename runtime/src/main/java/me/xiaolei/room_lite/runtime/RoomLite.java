@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import me.xiaolei.room_lite.runtime.adapters.Adapters;
-import me.xiaolei.room_lite.runtime.adapters.ContainerAdapter;
+import me.xiaolei.room_lite.runtime.adapters.Adapter;
 import me.xiaolei.room_lite.runtime.coverts.Convert;
 import me.xiaolei.room_lite.runtime.coverts.Converts;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
@@ -45,7 +45,7 @@ public class RoomLite
      *
      * @param adapter
      */
-    public static void addAdapter(ContainerAdapter<?> adapter)
+    public static void addAdapter(Adapter<?> adapter)
     {
         Adapters.addAdapter(adapter);
     }

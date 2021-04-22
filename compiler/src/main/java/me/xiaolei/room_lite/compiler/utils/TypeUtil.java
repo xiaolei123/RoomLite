@@ -49,7 +49,22 @@ public class TypeUtil
             return false;
         }
     }
-    
+
+    /**
+     * 是一个列表
+     */
+    public static boolean isList(TypeMirror paramType)
+    {
+        if (paramType.getKind().isPrimitive())
+            return false;
+        if (paramType instanceof DeclaredType)
+        {
+            Element element = ((DeclaredType) paramType).asElement();
+            return List.class.getCanonicalName().equals(element.toString());
+        }
+        return false;
+    }
+
     /**
      * 是表List集合
      */
