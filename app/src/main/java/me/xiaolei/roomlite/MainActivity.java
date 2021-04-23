@@ -41,17 +41,16 @@ public class MainActivity extends AppCompatActivity
 
         LiteDataBase dataBase = RoomLite.build(LiteDataBase.class);
         UserDao userDao = dataBase.getDao(UserDao.class);
-
-
-        // LiveData<Integer> liveData = userDao.asyncCount();
+        
+        LiveData<Integer> liveData = userDao.asyncCount();
         text.setOnClickListener(v ->
         {
             roomLite(userDao);
         });
-        // liveData.observe(this, count ->
-        // {
-        //     Log.e("XIAOLEI", "自动更新总数:" + count);
-        // });
+        liveData.observe(this, count ->
+        {
+            Log.e("XIAOLEI", "自动更新总数:" + count);
+        });
     }
 
     private void roomLite(UserDao dao)

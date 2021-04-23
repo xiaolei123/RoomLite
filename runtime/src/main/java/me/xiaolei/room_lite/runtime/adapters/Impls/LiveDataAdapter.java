@@ -1,6 +1,7 @@
 package me.xiaolei.room_lite.runtime.adapters.Impls;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import java.lang.reflect.Type;
 
@@ -21,7 +22,7 @@ public class LiveDataAdapter extends Adapter<LiveData>
     @Override
     public LiveData<?> process(Processor processor, Type generic)
     {
-        return (LiveData<?>) new LiveData<Object>()
+        return (LiveData<?>) new MutableLiveData<Object>()
         {
             @Override
             protected void onActive()
