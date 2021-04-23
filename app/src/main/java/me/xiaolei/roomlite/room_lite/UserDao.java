@@ -87,6 +87,9 @@ public interface UserDao
     @Query(entity = User.class)
     LiveData<List<User>> asyncAll();
 
+    @Query(what = "count(*)", entity = User.class)
+    LiveData<Integer> asyncCount();
+
     @Query(entity = User.class)
     LiveData<List<Integer>> asyncAll2();
 

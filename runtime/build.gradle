@@ -15,8 +15,9 @@ android {
 }
 
 dependencies {
-    compileOnly 'androidx.annotation:annotation:1.2.0'
+    implementation 'androidx.annotation:annotation:1.2.0'
+    implementation 'androidx.loader:loader:1.1.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-core:2.3.1'
     api project(':runtime_apis')
-    // implementation 'androix.sqlite:sqlite:2.0.1'
     // implementation 'androix.sqlite:sqlite-framework:2.0.1'
 }

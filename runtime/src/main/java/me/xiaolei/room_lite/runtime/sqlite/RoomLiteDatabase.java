@@ -4,6 +4,8 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -24,12 +26,20 @@ public abstract class RoomLiteDatabase
      * 数据库名称
      */
     private final String dbName;
+    // 数据库存放的位置
     private final File dbDir;
+    // 缓存DAO对象
     private final Map<Class<?>, Object> daoCache = new ConcurrentHashMap<>();
+    // SQLite的执行对象
     private final LiteDataBase database;
+    // 每个表的helper对象缓存
     private final Map<Class<?>, EntityHelper> helperCache = new HashMap<>();
-    private final ContentResolver contentResolver;
-    private final Uri databaseUri;
+    // 当前数据库的URI
+    private final Uri dbUri;
+    // 数据解析起
+    private final ContentResolver resolver;
+    // 子线程的Handler
+    private final Handler handler;
 
     /**
      * 初始化数据库，
@@ -66,12 +76,15 @@ public abstract class RoomLiteDatabase
      */
     public RoomLiteDatabase(String dbName, File dbDir)
     {
-        this.contentResolver = DataBaseProvider.context.getContentResolver();
-        this.databaseUri = Uri.parse(DataBaseProvider.authorities + "?tableName=" + dbName);
         this.dbName = dbName;
         this.dbDir = dbDir;
         this.database = new LiteDataBase(this);
-        DataBaseProvider.offerLiteDataBase(this.dbName, this.database);
+        Context context = DataBaseProvider.context;
+        this.dbUri = Uri.parse("content://" + context.getPackageName() + ".room_lite.provider?dbName=" + dbName);
+        this.resolver = context.getContentResolver();
+        HandlerThread thread = new HandlerThread(dbName + "-thread");
+        thread.start();
+        this.handler = new Handler(thread.getLooper());
     }
 
     /**
@@ -90,15 +103,50 @@ public abstract class RoomLiteDatabase
         return dbDir;
     }
 
-
-    public ContentResolver getContentResolver()
+    /**
+     * 获取数据库的Uri
+     */
+    public Uri getDbUri()
     {
-        return contentResolver;
+        return dbUri;
     }
 
-    public Uri getDatabaseUri()
+    /**
+     * 获取数据库的数据解析器
+     */
+    public ContentResolver getResolver()
     {
-        return databaseUri;
+        return resolver;
+    }
+
+    /**
+     * 获取一个子线程的Handler
+     */
+    public Handler getHandler()
+    {
+        return handler;
+    }
+
+    /**
+     * 唤醒RoomLite，通知表已经更新
+     */
+    public void notifyTable(String tableName)
+    {
+        boolean hasTable = false;
+        for (EntityHelper helper : helperCache.values())
+        {
+            if (tableName.equals(helper.getTableName()))
+            {
+                hasTable = true;
+                break;
+            }
+        }
+        if (!hasTable)
+            throw new RuntimeException(tableName + "不在数据库:" + dbName + "中");
+        Uri tableUri = dbUri.buildUpon()
+                .appendQueryParameter("tableName", tableName)
+                .build();
+        resolver.notifyChange(tableUri, null);
     }
 
     /**

@@ -6,7 +6,10 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -111,6 +114,7 @@ public class DaoProcessorUtil
         // 再循环参数，循环生成批量插入代码
         builder.addCode("this.sqLite.doTransaction((transaction) ->");//
         builder.addCode("{");//
+        Set<TypeElement> entities = new HashSet<>();
         for (VariableElement param : params)
         {
             // 参数类型
@@ -131,6 +135,7 @@ public class DaoProcessorUtil
             }
 
             TypeElement entityElement = (TypeElement) typeUtil.asElement(entityType);
+            entities.add(entityElement);
             String entityTypeName = entityElement.getQualifiedName().toString();
             String helperName = paramName + "$$helper";
 
@@ -146,7 +151,11 @@ public class DaoProcessorUtil
             }
         }
         builder.addStatement("})");
-
+        // 批量生成通知表更新事件的代码
+        for (TypeElement entity : entities)
+        {
+            builder.addStatement("this.database.notifyTable($S)", ElementUtil.getTableName(entity));
+        }
         // 判断是否需要返回int数据
         if (returnTypeKind == TypeKind.INT)
         {
@@ -209,6 +218,7 @@ public class DaoProcessorUtil
             builder.addStatement("throw new $T(this.database.getDatabaseName() + \"不存在 $N所对应的表\")", RuntimeException.class, entityTypeName);
         }
 
+        Set<TypeElement> entities = new HashSet<>();
         // 再循环参数，循环生成批量插入代码
         builder.addCode("this.sqLite.doTransaction((transaction) ->");//
         builder.addCode("{");//
@@ -232,6 +242,7 @@ public class DaoProcessorUtil
             }
 
             TypeElement entityElement = (TypeElement) typeUtil.asElement(entityType);
+            entities.add(entityElement);
             String entityTypeName = entityElement.getQualifiedName().toString();
             String helperName = paramName + "$$helper";
 
@@ -247,7 +258,11 @@ public class DaoProcessorUtil
             }
         }
         builder.addStatement("})");
-
+        // 批量生成通知表更新事件的代码
+        for (TypeElement entity : entities)
+        {
+            builder.addStatement("this.database.notifyTable($S)", ElementUtil.getTableName(entity));
+        }
         // 判断是否需要返回int数据
         if (returnTypeKind == TypeKind.INT)
         {
@@ -310,6 +325,7 @@ public class DaoProcessorUtil
             builder.addStatement("throw new $T(this.database.getDatabaseName() + \"不存在 $N所对应的表\")", RuntimeException.class, entityTypeName);
         }
 
+        Set<TypeElement> entities = new HashSet<>();
         // 再循环参数，循环生成批量插入代码
         builder.addCode("this.sqLite.doTransaction((transaction) ->");//
         builder.addCode("{");//
@@ -333,6 +349,7 @@ public class DaoProcessorUtil
             }
 
             TypeElement entityElement = (TypeElement) typeUtil.asElement(entityType);
+            entities.add(entityElement);
             String entityTypeName = entityElement.getQualifiedName().toString();
             String helperName = paramName + "$$helper";
 
@@ -348,7 +365,11 @@ public class DaoProcessorUtil
             }
         }
         builder.addStatement("})");
-
+        // 批量生成通知表更新事件的代码
+        for (TypeElement entity : entities)
+        {
+            builder.addStatement("this.database.notifyTable($S)", ElementUtil.getTableName(entity));
+        }
         // 判断是否需要返回int数据
         if (returnTypeKind == TypeKind.INT)
         {
@@ -521,22 +542,16 @@ public class DaoProcessorUtil
                 // 再生成调用函数的代码
                 builder.addStatement("$T adapter = $T.getAdapter($T.class)", Global.Adapter, Global.Adapters, ClassName.get(returnElement));
 
-                builder.addCode("$T processor = new $T()", Global.Processor, Global.Processor);//
+                builder.addStatement("$T sql = $S", String.class, querySql);
+                builder.addCode("$T processor = new $T(this.database, this.sqLite,$S, sql,$N)", Global.Processor, Global.Processor, tableName, argsName);//
                 builder.addCode("{");
                 builder.addCode("@Override\n");
-                builder.addCode("public Object process($T cursor)", Global.Cursor);
+                builder.addCode("public Object cursorToObject($T cursor)", Global.Cursor);
                 builder.addCode("{");
                 builder.addStatement("return $N(cursor)", invokeMethodName);
                 builder.addCode("}");
-                builder.addCode("@Override\n");
-                builder.addCode("public $T queryCursor($T sql, $T args)", Global.Cursor, String.class, String[].class);
-                builder.addCode("{");
-                builder.addStatement("return sqLite.rawQuery(sql, args)");
-                builder.addCode("}");
                 builder.addStatement("}");
-
-                builder.addStatement("$T sql = $S", String.class, querySql);
-                builder.addStatement("return ($T) adapter.process(processor,this.database,$T.class, sql, $N)", ClassName.get(type), ClassName.get(typeUtil.erasure(generic)), argsName);
+                builder.addStatement("return ($T) adapter.process(processor,$T.class)", ClassName.get(type), ClassName.get(typeUtil.erasure(generic)));
             } else
             {
                 // 生成查询结果代码 try cache

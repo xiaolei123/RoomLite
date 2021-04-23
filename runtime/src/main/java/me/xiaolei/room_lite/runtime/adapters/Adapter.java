@@ -30,12 +30,9 @@ public abstract class Adapter<T>
     /**
      * 转换
      *
-     * @param processor 一般会使用这个参数，queryCursor获取Cursor 然后通过process转换成对应的对象
-     * @param database  对应的数据库
+     * @param processor 一般会使用这个参数,直接获取对象，或者使用动态监听对象改动
      * @param generic   范型
-     * @param sql       SQL语句
-     * @param args      SQL语句的参数
      * @return 返回对应的类型的容器对象
      */
-    public abstract T process(Processor processor, RoomLiteDatabase database, Type generic, String sql, String[] args);
+    public abstract T process(Processor processor, Type generic);
 }
