@@ -5,6 +5,8 @@
 
 Android平台下，使用编译期注解生成Java文件，拒绝低性能。一个SQLite数据库ORM的船新版本。增删改查建表，排序正序倒序唯一性，表索引，多线程并发读写都不在话下。确定不了解一下？
 
+更新支持查询LiveData自动更新,自动跟随界面生命周期销毁资源
+
 #### 获取
 
 ```gradle
@@ -37,7 +39,7 @@ dependencies {
 
 #### 使用说明
 
-##### 1.创建数据库
+##### 1. 创建数据库
 ```java
 public static class DataBase extends RoomLiteDatabase
 {
@@ -77,7 +79,7 @@ public static class DataBase extends RoomLiteDatabase
 }
 ```
 
-##### 2.在数据库里创建表
+##### 2. 在数据库里创建表
 
 ```java
 @Entity(name = "User")
@@ -93,33 +95,33 @@ public class User
     public Bitmap bitmap;
 }
 ```
-###### 2.1声明字段为主键（并且自增长）,自增长只有在类型为数字类型的时候才会生效
+###### 2.1 声明字段为主键（并且自增长）,自增长只有在类型为数字类型的时候才会生效
 ```java
 @PrimaryKey(autoGenerate = true)
 ```
-###### 2.2字段 NOT NULL
+###### 2.2 字段 NOT NULL
 ```java
 @Column(notNull = true)
 ```
 
-###### 2.3字段唯一 UNIQUE
+###### 2.3 字段唯一 UNIQUE
 
 ```java
 @Column(unique = true)
 ```
 
-###### 2.4默认值 DEFAULT
+###### 2.4 默认值 DEFAULT
 ```java
 @Column( defaultValue = "0")
 ```
 
-###### 2.5忽略某个字段
+###### 2.5 忽略某个字段
 ```java
 @Ignore
 public Bitmap bitmap;
 ```
 
-###### 2.6支持自定义字段
+###### 2.6 支持自定义字段
  
 第一步：在表类里声明自定义类型
 ```java
@@ -162,7 +164,7 @@ public class DateConvert extends ToLongConvert<Date>
 RoomLite.addConvert(new DateConvert());
 ```
 
-##### 3.创建索引 方式一
+##### 3. 创建索引 方式一
 
 ```java
 @Entity(name = "User", indices = {
@@ -172,7 +174,7 @@ RoomLite.addConvert(new DateConvert());
 })
 ```
 
-##### 4.创建索引 方式二
+##### 4. 创建索引 方式二
 
 ```java
 @Column(index = true)
@@ -180,7 +182,7 @@ RoomLite.addConvert(new DateConvert());
 
 
 
-##### 5.创建Dao
+##### 5. 创建Dao
 
 ```java
 @Dao
@@ -200,16 +202,16 @@ public interface UserDao
 }
 ```
 
-##### 6.获取DataBase实例,获得Dao
+##### 6. 获取DataBase实例,获得Dao
 
 ```java
 DataBase dataBase = RoomLite.build(DataBase.class);
 UserDao dao = dataBase.getDao(UserDao.class);
 ```
 
-##### 7.增删改查使用
+##### 7. 增删改查使用
 
-###### 7.1增
+###### 7.1 增
 
 ```java
 @Insert
@@ -220,7 +222,7 @@ public void addUser(User[] users);
 public void addUserList(List<User> users);
 ```
 
-###### 7.2删除
+###### 7.2 删除
 ```java
 @Delete
 public int deleteUser(User user);
@@ -230,7 +232,7 @@ public void deleteUser(User[] users);
 public void deleteUserList(List<User> users);
 ```
 
-###### 7.3改
+###### 7.3 改
 ```java
 @Update
 public int updateUser(User user);
@@ -240,7 +242,7 @@ public void updateUser(User[] users);
 public void updateUserList(List<User> users);
 ```
 
-###### 7.4查
+###### 7.4 查
 ```java
 // 查询所有
 @Query(entity = User.class)
@@ -263,25 +265,30 @@ public String[] queryNames();
 public User[] querySearch(String name);
 ```
 
-###### 7.5查询分页
+###### 7.5 查询分页
 ```java
 @Query(entity = User.class, whereClause = "name like ?",limit=@Limit(index = "0", maxLength = "30"))
 ```
 
-###### 7.6查询占位符
+###### 7.6 查询占位符
 ```java
 @Query(entity = User.class, whereClause = "name like ?",limit=@Limit(index = "0", maxLength = "?"))
 ```
 
-###### 7.7查询排序-正序
+###### 7.7 查询排序-正序
 ```java
 @Query(entity = User.class, orderBy = @OrderBy(columnNames = {"id"}, type = OrderBy.Type.ASC))
 ```
 
-###### 7.8查询排序-倒序
+###### 7.8 查询排序-倒序
 ```java
 @Query(entity = User.class, orderBy = @OrderBy(columnNames = {"id"}, type = OrderBy.Type.DESC))
 ```
 
+###### 7.9 查询LiveData支持
+```java
+@Query(what = "name", entity = User.class)
+public LiveData<String[]> queryNames();
+```
 
 > End.
