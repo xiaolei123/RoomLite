@@ -19,7 +19,7 @@ public class LiteDataBase extends RoomLiteDatabase
     @Override
     public Class<?>[] getEntities()
     {
-        return new Class[]{User.class};
+        return new Class[]{User.class, People.class};
     }
 
     // 是否允许在主线程中执行

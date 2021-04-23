@@ -2,6 +2,7 @@ package me.xiaolei.room_lite.runtime.sqlite;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Handler;
@@ -80,7 +81,10 @@ public abstract class RoomLiteDatabase
         this.dbDir = dbDir;
         this.database = new LiteDataBase(this);
         Context context = DataBaseProvider.context;
-        this.dbUri = Uri.parse("content://" + context.getPackageName() + ".room_lite.provider?dbName=" + dbName);
+        this.dbUri = new Uri.Builder().scheme("content")
+                .authority(context.getPackageName() + ".room_lite.provider")
+                .appendPath(dbName)
+                .build();
         this.resolver = context.getContentResolver();
         HandlerThread thread = new HandlerThread(dbName + "-thread");
         thread.start();
@@ -112,14 +116,6 @@ public abstract class RoomLiteDatabase
     }
 
     /**
-     * 获取数据库的数据解析器
-     */
-    public ContentResolver getResolver()
-    {
-        return resolver;
-    }
-
-    /**
      * 获取一个子线程的Handler
      */
     public Handler getHandler()
@@ -128,9 +124,32 @@ public abstract class RoomLiteDatabase
     }
 
     /**
+     * 注册数据改动监听器
+     *
+     * @param tableName 监听哪个表的改动
+     * @param observer  监听器
+     */
+    public void registerContentObserver(String tableName, RoomLiteContentObserver observer)
+    {
+        Uri tableUri = dbUri.buildUpon()
+                .appendPath(tableName).build();
+        resolver.registerContentObserver(tableUri, true, observer);
+    }
+
+    /**
+     * 注销数据监听器
+     *
+     * @param observer
+     */
+    public void unregisterContentObserver(ContentObserver observer)
+    {
+        resolver.unregisterContentObserver(observer);
+    }
+
+    /**
      * 唤醒RoomLite，通知表已经更新
      */
-    public void notifyTable(String tableName)
+    public void notifyContent(String tableName)
     {
         boolean hasTable = false;
         for (EntityHelper helper : helperCache.values())
@@ -144,7 +163,7 @@ public abstract class RoomLiteDatabase
         if (!hasTable)
             throw new RuntimeException(tableName + "不在数据库:" + dbName + "中");
         Uri tableUri = dbUri.buildUpon()
-                .appendQueryParameter("tableName", tableName)
+                .appendPath(tableName)
                 .build();
         resolver.notifyChange(tableUri, null);
     }

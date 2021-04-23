@@ -154,7 +154,7 @@ public class DaoProcessorUtil
         // 批量生成通知表更新事件的代码
         for (TypeElement entity : entities)
         {
-            builder.addStatement("this.database.notifyTable($S)", ElementUtil.getTableName(entity));
+            builder.addStatement("this.database.notifyContent($S)", ElementUtil.getTableName(entity));
         }
         // 判断是否需要返回int数据
         if (returnTypeKind == TypeKind.INT)
@@ -261,7 +261,7 @@ public class DaoProcessorUtil
         // 批量生成通知表更新事件的代码
         for (TypeElement entity : entities)
         {
-            builder.addStatement("this.database.notifyTable($S)", ElementUtil.getTableName(entity));
+            builder.addStatement("this.database.notifyContent($S)", ElementUtil.getTableName(entity));
         }
         // 判断是否需要返回int数据
         if (returnTypeKind == TypeKind.INT)
@@ -368,7 +368,7 @@ public class DaoProcessorUtil
         // 批量生成通知表更新事件的代码
         for (TypeElement entity : entities)
         {
-            builder.addStatement("this.database.notifyTable($S)", ElementUtil.getTableName(entity));
+            builder.addStatement("this.database.notifyContent($S)", ElementUtil.getTableName(entity));
         }
         // 判断是否需要返回int数据
         if (returnTypeKind == TypeKind.INT)

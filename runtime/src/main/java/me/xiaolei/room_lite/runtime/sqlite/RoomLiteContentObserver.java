@@ -5,13 +5,12 @@ import android.net.Uri;
 
 import androidx.annotation.Nullable;
 
-import java.util.UUID;
+import java.util.List;
 
 public abstract class RoomLiteContentObserver extends ContentObserver
 {
     private final String dbName;
     private final String tableName;
-    private final String uid = UUID.randomUUID().toString();
     private final RoomLiteDatabase database;
 
     public RoomLiteContentObserver(RoomLiteDatabase database, String tableName)
@@ -22,20 +21,18 @@ public abstract class RoomLiteContentObserver extends ContentObserver
         this.tableName = tableName;
     }
 
-    public String getUid()
-    {
-        return uid;
-    }
-
     @Override
     public void onChange(boolean selfChange, @Nullable Uri uri)
     {
         if (uri == null)
             return;
-        String dbName = uri.getQueryParameter("dbName");
-        String tableName = uri.getQueryParameter("tableName");
-        String uid = uri.getQueryParameter("uid");
-        if (this.dbName.equals(dbName) && this.tableName.equals(tableName) && (uid == null || uid.equals(this.uid)))
+        List<String> paths = uri.getPathSegments();
+        if (paths.size() != 2)
+            return;
+
+        String dbName = paths.get(0);
+        String tableName = paths.get(1);
+        if (this.dbName.equals(dbName) && this.tableName.equals(tableName))
         {
             super.onChange(selfChange, uri);
         }

@@ -6,7 +6,7 @@ import me.xiaolei.room_lite.annotations.PrimaryKey;
 @Entity
 public class People
 {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     public int id;
 
     public String name;

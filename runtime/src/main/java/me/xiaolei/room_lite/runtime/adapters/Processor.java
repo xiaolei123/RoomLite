@@ -1,8 +1,6 @@
 package me.xiaolei.room_lite.runtime.adapters;
 
-import android.content.ContentResolver;
 import android.database.Cursor;
-import android.net.Uri;
 
 import me.xiaolei.room_lite.runtime.sqlite.LiteDataBase;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteContentObserver;
@@ -19,7 +17,6 @@ public abstract class Processor
     private final String querySql;
     private final String[] args;
     private RoomLiteContentObserver observer;
-    private final ContentResolver resolver;
 
     public Processor(RoomLiteDatabase database, LiteDataBase sqLite, String tableName, String querySql, String[] args)
     {
@@ -28,11 +25,16 @@ public abstract class Processor
         this.tableName = tableName;
         this.querySql = querySql;
         this.args = args;
-        this.resolver = this.database.getResolver();
     }
 
+    /**
+     * 由Cursor对象转换成Java对象，这里是由编译期自动生成对应的代码执行
+     */
     protected abstract Object cursorToObject(Cursor cursor);
 
+    /**
+     * 直接查询，获取对应的对象
+     */
     public Object process()
     {
         try (Cursor cursor = this.sqLite.rawQuery(this.querySql, args))
@@ -44,9 +46,11 @@ public abstract class Processor
         }
     }
 
+    /**
+     * 注册数据改动监听器
+     */
     public void registerLiveProcess(OnLiveProcessListener listener)
     {
-        Uri dbUri = this.database.getDbUri();
         if (observer == null)
         {
             synchronized (this)
@@ -60,19 +64,20 @@ public abstract class Processor
                     }
                 };
                 listener.onLiveObject(process());
-                
-                Uri tableUri = dbUri.buildUpon()
-                        .appendQueryParameter("tableName", tableName)
-                        .appendQueryParameter("uid", observer.getUid())
-                        .build();
-                resolver.registerContentObserver(tableUri, false, observer);
+                this.database.registerContentObserver(tableName, observer);
             }
         }
     }
 
+    /**
+     * 取消注册数据改动监听器
+     */
     public void unRegisterLiveProcess()
     {
         if (observer != null)
-            resolver.unregisterContentObserver(observer);
+        {
+            this.database.unregisterContentObserver(observer);
+            observer = null;
+        }
     }
 }
