@@ -186,6 +186,105 @@ public class EntityHelperUtils
     }
 
     /**
+     * 获取所有索引的名称
+     */
+    public static MethodSpec indexNames(TypeElement element)
+    {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("indexNames")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
+                .returns(String[].class);
+
+        // 获取表名
+        String tableName = ElementUtil.getTableName(element);
+        // 获取@Entity的注解
+        Entity entity = element.getAnnotation(Entity.class);
+        // 获取所有字段
+        List<VariableElement> fields = ElementUtil.getFields(element);
+        // 获取表注解上的索引
+        Index[] indices = entity.indices();
+        // 获取所有字段上的，并且加了索引的注解
+        List<VariableElement> columns = fields.stream().filter(varElement ->
+        {
+            Column column = varElement.getAnnotation(Column.class);
+            return column != null && column.index();
+        }).collect(Collectors.toList());
+        // 获取索引的数量
+        int indexCount = columns.size() + indices.length;
+        int index = 0;
+        // 生成对应数量的预备字符串占位
+        builder.addStatement("$T[] indexNames = new $T[$L]", String.class, String.class, indexCount);
+        ArrayList<String> indexNames = new ArrayList<>();
+        // 对字段上的注解进行索引SQL语句的生成
+        for (VariableElement columnElement : columns)
+        {
+            String columnName = ElementUtil.getColumnName(columnElement);
+            String indexName = tableName + "_" + columnName + "_index";
+            // 先判断这个索引名称是否存在
+            if (indexNames.contains(indexName))
+            {
+                throw new RuntimeException(element + "声明的索引: " + indexName + " 有重复");
+            } else
+            {
+                // 如果不存在，则缓存起来
+                indexNames.add(indexName);
+            }
+            builder.addStatement("indexNames[$L] = $S", index++, indexName);
+        }
+        // 对表注解上的索引进行循环解析SQL语句的生成
+        for (Index t_index : indices)
+        {
+            // 字段名称
+            String[] columnNames = t_index.columnNames();
+            if (columnNames.length == 0)
+            {
+                throw new RuntimeException(element + "使用的@Entity里，indices 里，索引的字段名称不许为空");
+            }
+            // 索引名称
+            String indexName = t_index.name().isEmpty() ? (tableName + "_index") : t_index.name();
+
+            // 先判断这个索引名称是否存在
+            if (indexNames.contains(indexName))
+            {
+                throw new RuntimeException(element + "声明的索引: " + indexName + " 有重复");
+            } else
+            {
+                // 如果不存在，则缓存起来
+                indexNames.add(indexName);
+            }
+            // 生成索引部分代码
+            builder.addStatement("indexNames[$L] = $S", index++, indexName);
+        }
+        builder.addStatement("return indexNames");
+        return builder.build();
+    }
+
+    /**
+     * 获取所有的字段名称
+     */
+    public static MethodSpec columnNames(TypeElement element)
+    {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("columnNames")
+                .addModifiers(Modifier.PUBLIC)
+                .addAnnotation(Override.class)
+                .returns(String[].class);
+        // 获取所有字段
+        List<VariableElement> fields = ElementUtil.getFields(element);
+        int index = 0;
+        builder.addStatement("$T[] columnNames = new $T[$L]", String.class, String.class, fields.size());
+        for (int i = 0; i < fields.size(); i++)
+        {
+            VariableElement field = fields.get(i);
+            String columnName = ElementUtil.getColumnName(field);
+            // 防止字段冲突，对字段使用 `` 进行包裹
+            String columnNameBox = "`" + columnName + "` ";
+            builder.addStatement("columnNames[$L] = $S", index++, columnNameBox);
+        }
+        builder.addStatement("return columnNames");
+        return builder.build();
+    }
+
+    /**
      * 创建索引
      */
     public static MethodSpec getCreateIndexSQL(TypeElement element)

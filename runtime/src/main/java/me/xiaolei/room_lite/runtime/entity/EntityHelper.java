@@ -22,6 +22,16 @@ public interface EntityHelper
     public String getCreateSQL();
 
     /**
+     * 获取所有索引的名称
+     */
+    public String[] indexNames();
+
+    /**
+     * 获取所有表字段名称
+     */
+    public String[] columnNames();
+
+    /**
      * 创建索引的SQL语句
      */
     public String[] getCreateIndexSQL();
