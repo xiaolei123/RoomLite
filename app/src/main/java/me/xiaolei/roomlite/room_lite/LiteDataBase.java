@@ -1,11 +1,10 @@
 package me.xiaolei.roomlite.room_lite;
 
 
-import android.database.sqlite.SQLiteDatabase;
-
 import androidx.annotation.Nullable;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import me.xiaolei.room_lite.runtime.sqlite.DataBaseProvider;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
 
 public class LiteDataBase extends RoomLiteDatabase
@@ -13,7 +12,7 @@ public class LiteDataBase extends RoomLiteDatabase
     public LiteDataBase()
     {
         // 数据库名称
-        super("school");
+        super("school", DataBaseProvider.context.getExternalFilesDir(null));
     }
 
     // 所有的表Entity

@@ -79,16 +79,6 @@ public abstract class SQLiteDatabaseWrapper extends SupportSQLiteOpenHelper.Call
     }
 
     @Override
-    public void setVersion(int version)
-    {
-        this.postWait((database) ->
-        {
-            database.setVersion(version);
-            return null;
-        });
-    }
-
-    @Override
     public void close()
     {
         writeExecutor.shutdownNow();

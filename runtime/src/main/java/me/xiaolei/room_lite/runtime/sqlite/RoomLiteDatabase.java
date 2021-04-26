@@ -35,7 +35,7 @@ public abstract class RoomLiteDatabase
     // SQLite的执行对象
     private final LiteDataBase database;
     // 每个表的helper对象缓存
-    private final Map<Class<?>, EntityHelper> helperCache = new HashMap<>();
+    private final Map<Class<?>, EntityHelper> helperCache = new ConcurrentHashMap<>();
     // 当前数据库的URI
     private final Uri dbUri;
     // 数据解析起
@@ -51,23 +51,6 @@ public abstract class RoomLiteDatabase
     public RoomLiteDatabase(String dbName)
     {
         this(dbName, DataBaseProvider.context.getDir("databases", Context.MODE_PRIVATE));
-        Class<?>[] entities = this.getEntities();
-        if (entities == null || entities.length == 0)
-            throw new RuntimeException(this.getClass().getCanonicalName() + "的 getEntities() 函数返回的Entities不可以为空");
-        for (Class<?> entityKlass : entities)
-        {
-            String klassName = entityKlass.getSimpleName();
-            String packageName = Objects.requireNonNull(entityKlass.getPackage()).getName();
-            String helperName = packageName + "." + klassName + Suffix.helper_suffix;
-            try
-            {
-                Class<? extends EntityHelper> helperClass = (Class<? extends EntityHelper>) Class.forName(helperName);
-                helperCache.put(entityKlass, helperClass.newInstance());
-            } catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     /**
@@ -90,6 +73,24 @@ public abstract class RoomLiteDatabase
         HandlerThread thread = new HandlerThread(dbName + "-thread");
         thread.start();
         this.handler = new Handler(thread.getLooper());
+        // 找到每个helper
+        Class<?>[] entities = this.getEntities();
+        if (entities == null || entities.length == 0)
+            throw new RuntimeException(this.getClass().getCanonicalName() + "的 getEntities() 函数返回的Entities不可以为空");
+        for (Class<?> entityKlass : entities)
+        {
+            String klassName = entityKlass.getSimpleName();
+            String packageName = Objects.requireNonNull(entityKlass.getPackage()).getName();
+            String helperName = packageName + "." + klassName + Suffix.helper_suffix;
+            try
+            {
+                Class<? extends EntityHelper> helperClass = (Class<? extends EntityHelper>) Class.forName(helperName);
+                helperCache.put(entityKlass, helperClass.newInstance());
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     /**
@@ -184,10 +185,10 @@ public abstract class RoomLiteDatabase
             String sql = helper.getCreateSQL();
             db.execSQL(sql);
             String[] indexCreateSqls = helper.getCreateIndexSQL();
-            Log.e("RoomLite", "create:" + sql);
+            Log.e("RoomLite", "建表:" + sql);
             for (String createSql : indexCreateSqls)
             {
-                Log.e("RoomLite", "indexCreate:" + createSql);
+                Log.e("RoomLite", "索引:" + createSql);
                 db.execSQL(createSql);
             }
         }

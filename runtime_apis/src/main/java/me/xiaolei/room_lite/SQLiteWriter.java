@@ -4,6 +4,9 @@ import android.content.ContentValues;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
+/**
+ * 可写的数据库
+ */
 public interface SQLiteWriter
 {
     public void execSQL(String sql) throws SQLException;

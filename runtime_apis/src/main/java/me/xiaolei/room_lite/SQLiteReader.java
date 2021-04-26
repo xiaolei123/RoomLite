@@ -8,7 +8,5 @@ public interface SQLiteReader
 
     public int getVersion();
 
-    public void setVersion(int version);
-
     public void doTransaction(WriterRunnable runnable);
 }
