@@ -1,4 +1,4 @@
-package me.xiaolei.room_lite;
+package me.xiaolei.room_lite.runtime.sqlite;
 
 public interface WriterRunnable
 {

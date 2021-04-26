@@ -14,8 +14,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-import me.xiaolei.room_lite.SQLiteReader;
-import me.xiaolei.room_lite.WriterRunnable;
 import me.xiaolei.room_lite.runtime.util.ThreadPoolFactory;
 
 /**

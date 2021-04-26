@@ -32,7 +32,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import me.xiaolei.room_lite.ConflictAlgorithm;
-import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.annotations.Entity;
 import me.xiaolei.room_lite.annotations.Limit;
 import me.xiaolei.room_lite.annotations.OrderBy;
@@ -108,7 +107,7 @@ public class DaoProcessorUtil
             // 定义对应的帮助类的名称
             String helperName = paramName + "$$helper";
             // 获取对应的帮助类
-            builder.addStatement("$T $N = this.database.getEntityHelper($N.class)", EntityHelper.class, helperName, entityTypeName);
+            builder.addStatement("$T $N = this.database.getEntityHelper($N.class)", Global.EntityHelper, helperName, entityTypeName);
             // 对帮助类进行判断，不存在则说明插入的类型不属于这个数据库
             builder.addCode("if ($N == null)", helperName);
             // 直接抛出异常
@@ -215,7 +214,7 @@ public class DaoProcessorUtil
             // 定义对应的帮助类的名称
             String helperName = paramName + "$$helper";
             // 获取对应的帮助类
-            builder.addStatement("$T $N = this.database.getEntityHelper($N.class)", EntityHelper.class, helperName, entityTypeName);
+            builder.addStatement("$T $N = this.database.getEntityHelper($N.class)", Global.EntityHelper, helperName, entityTypeName);
             // 对帮助类进行判断，不存在则说明插入的类型不属于这个数据库
             builder.addCode("if ($N == null)", helperName);
             // 直接抛出异常
@@ -324,7 +323,7 @@ public class DaoProcessorUtil
             // 定义对应的帮助类的名称
             String helperName = paramName + "$$helper";
             // 获取对应的帮助类
-            builder.addStatement("$T $N = this.database.getEntityHelper($N.class)", EntityHelper.class, helperName, entityTypeName);
+            builder.addStatement("$T $N = this.database.getEntityHelper($N.class)", Global.EntityHelper, helperName, entityTypeName);
             // 对帮助类进行判断，不存在则说明插入的类型不属于这个数据库
             builder.addCode("if ($N == null)", helperName);
             // 直接抛出异常
@@ -653,7 +652,7 @@ public class DaoProcessorUtil
             builder.addStatement("$T value = ($T) convert.cursorToJavaObject(cursor, columnIndex)", ClassName.get(componentType), ClassName.get(componentType));
         } else if (componentType.equals(entityClass)) // 再判断类型是不是当前表的类型
         {
-            builder.addStatement("$T helper = this.database.getEntityHelper($T.class)", EntityHelper.class, ClassName.get(componentType));//;
+            builder.addStatement("$T helper = this.database.getEntityHelper($T.class)", Global.EntityHelper, ClassName.get(componentType));//;
             builder.addCode("while (cursor.moveToNext()) {");//
             builder.addStatement("$T value = ($T) helper.fromCursor(cursor)", ClassName.get(componentType), ClassName.get(componentType));//
         } else

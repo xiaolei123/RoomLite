@@ -6,7 +6,6 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -17,7 +16,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import me.xiaolei.room_lite.ConflictAlgorithm;
-import me.xiaolei.room_lite.SQLiteWriter;
 import me.xiaolei.room_lite.Suffix;
 import me.xiaolei.room_lite.annotations.Column;
 import me.xiaolei.room_lite.annotations.Entity;
@@ -441,7 +439,7 @@ public class EntityHelperUtils
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
                 .addException(Exception.class)
-                .addParameter(SQLiteWriter.class, "sqLite")
+                .addParameter(Global.SQLiteWriter, "sqLite")
                 .addParameter(Object.class, "obj");
 
         List<VariableElement> allFields = ElementUtil.getFields(element);
@@ -488,7 +486,7 @@ public class EntityHelperUtils
                 .addModifiers(Modifier.PUBLIC)
                 .addException(Exception.class)
                 .addAnnotation(Override.class)
-                .addParameter(SQLiteWriter.class, "sqLite")
+                .addParameter(Global.SQLiteWriter, "sqLite")
                 .addParameter(ConflictAlgorithm.class, "conflict")
                 .addParameter(Object.class, "obj");
 
@@ -537,7 +535,7 @@ public class EntityHelperUtils
                 .addModifiers(Modifier.PUBLIC)
                 .addException(Exception.class)
                 .addAnnotation(Override.class)
-                .addParameter(SQLiteWriter.class, "sqLite")
+                .addParameter(Global.SQLiteWriter, "sqLite")
                 .addParameter(ConflictAlgorithm.class, "conflict")
                 .addParameter(Object.class, "obj");
 

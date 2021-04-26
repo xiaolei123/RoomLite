@@ -1,7 +1,10 @@
-package me.xiaolei.room_lite;
+package me.xiaolei.room_lite.runtime.entity;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+
+import me.xiaolei.room_lite.ConflictAlgorithm;
+import me.xiaolei.room_lite.runtime.sqlite.SQLiteWriter;
 
 /**
  * 表辅助类

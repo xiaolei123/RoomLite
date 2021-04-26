@@ -32,4 +32,8 @@ public class Global
     public static ClassName Adapter = ClassName.get("me.xiaolei.room_lite.runtime.adapters", "Adapter");
     public static ClassName Adapters = ClassName.get("me.xiaolei.room_lite.runtime.adapters", "Adapters");
     public static ClassName Processor = ClassName.get("me.xiaolei.room_lite.runtime.adapters", "Processor");
+    public static ClassName EntityHelper = ClassName.get("me.xiaolei.room_lite.runtime.entity", "EntityHelper");
+    public static ClassName SQLiteReader = ClassName.get("me.xiaolei.room_lite.runtime.sqlite", "SQLiteReader");
+    public static ClassName SQLiteWriter = ClassName.get("me.xiaolei.room_lite.runtime.sqlite", "SQLiteWriter");
+    public static ClassName WriterRunnable = ClassName.get("me.xiaolei.room_lite.runtime.sqlite", "WriterRunnable");
 }

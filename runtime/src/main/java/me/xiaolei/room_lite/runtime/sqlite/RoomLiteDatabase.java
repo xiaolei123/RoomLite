@@ -2,9 +2,6 @@ package me.xiaolei.room_lite.runtime.sqlite;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.database.ContentObserver;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -16,14 +13,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.Suffix;
-import me.xiaolei.room_lite.runtime.util.RoomLiteUtil;
+import me.xiaolei.room_lite.runtime.entity.EntityHelper;
 
 public abstract class RoomLiteDatabase
 {

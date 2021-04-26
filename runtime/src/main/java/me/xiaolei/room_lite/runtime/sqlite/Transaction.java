@@ -5,7 +5,6 @@ import android.database.SQLException;
 
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import me.xiaolei.room_lite.SQLiteWriter;
 
 /**
  * 事务，因为后续所有的有关于写的操作，都需要通过这个类完成

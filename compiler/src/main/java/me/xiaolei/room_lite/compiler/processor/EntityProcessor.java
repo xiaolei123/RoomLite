@@ -14,9 +14,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 
-import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.Suffix;
 import me.xiaolei.room_lite.annotations.Entity;
 import me.xiaolei.room_lite.compiler.Global;
@@ -75,7 +73,7 @@ public class EntityProcessor extends BaseProcessor
         TypeSpec.Builder helperClass = TypeSpec.classBuilder(helperKlassName)
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Global.Keep)
-                .addSuperinterface(ClassName.get(EntityHelper.class));
+                .addSuperinterface(Global.EntityHelper);
         // 构造函数
         MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC);
