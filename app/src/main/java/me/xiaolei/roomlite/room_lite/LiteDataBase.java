@@ -12,7 +12,7 @@ public class LiteDataBase extends RoomLiteDatabase
     public LiteDataBase()
     {
         // 数据库名称
-        super("school", DataBaseProvider.context.getExternalFilesDir(null));
+        super("school");
     }
 
     // 所有的表Entity
@@ -27,12 +27,6 @@ public class LiteDataBase extends RoomLiteDatabase
     public boolean allowRunOnUIThread()
     {
         return true;
-    }
-
-    @Override
-    public void onUpgrade(@Nullable SupportSQLiteDatabase db, int oldVersion, int newVersion)
-    {
-        super.onUpgrade(db, oldVersion, newVersion);
     }
 
     // 数据库版本

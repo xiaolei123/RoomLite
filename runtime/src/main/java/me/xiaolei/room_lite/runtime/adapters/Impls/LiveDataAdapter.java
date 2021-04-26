@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData;
 import java.lang.reflect.Type;
 
 import me.xiaolei.room_lite.runtime.adapters.Adapter;
-import me.xiaolei.room_lite.runtime.adapters.OnLiveProcessListener;
 import me.xiaolei.room_lite.runtime.adapters.Processor;
 
 /**
@@ -22,18 +21,18 @@ public class LiveDataAdapter extends Adapter<LiveData>
     @Override
     public LiveData<?> process(Processor processor, Type generic)
     {
-        return (LiveData<?>) new MutableLiveData<Object>()
+        return new MutableLiveData<Object>()
         {
             @Override
             protected void onActive()
             {
-                processor.registerLiveProcess((OnLiveProcessListener) this::postValue);
+                processor.registerLiveProcess(this::postValue);
             }
 
             @Override
             protected void onInactive()
             {
-                processor.unRegisterLiveProcess();
+                processor.close();
             }
         };
     }

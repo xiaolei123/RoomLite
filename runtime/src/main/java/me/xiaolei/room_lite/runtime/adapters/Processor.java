@@ -2,6 +2,8 @@ package me.xiaolei.room_lite.runtime.adapters;
 
 import android.database.Cursor;
 
+import java.io.Closeable;
+
 import me.xiaolei.room_lite.runtime.sqlite.LiteDataBase;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteContentObserver;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
@@ -9,7 +11,7 @@ import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
 /**
  * 用来解决自定义类型的情况，提供了两种数据获取方式，直接获取或者是监控获取
  */
-public abstract class Processor
+public abstract class Processor implements Closeable
 {
     private final RoomLiteDatabase database;
     private final LiteDataBase sqLite;
@@ -72,7 +74,8 @@ public abstract class Processor
     /**
      * 取消注册数据改动监听器
      */
-    public void unRegisterLiveProcess()
+    @Override
+    public void close()
     {
         if (observer != null)
         {

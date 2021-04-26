@@ -1,7 +1,5 @@
 package me.xiaolei.room_lite.runtime.sqlite;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
@@ -21,8 +19,7 @@ public class LiteDataBase extends SQLiteDatabaseWrapper
     @Override
     public void onCreate(@NonNull SupportSQLiteDatabase db)
     {
-        Log.e("XIAOLEI", "LiteDataBase.onCreate:" + db);
-        liteDatabase.onOpen(db);
+        liteDatabase.onCreate(db);
     }
 
     @Override
@@ -34,15 +31,16 @@ public class LiteDataBase extends SQLiteDatabaseWrapper
     @Override
     public void onOpen(@NonNull SupportSQLiteDatabase db)
     {
-        Log.e("XIAOLEI", "LiteDataBase.onOpen:" + db);
-        super.onOpen(db);
+        liteDatabase.onOpen(db);
     }
 
     @Override
     public void onConfigure(@NonNull SupportSQLiteDatabase db)
     {
+        // 启用并发读写
         db.enableWriteAheadLogging();
+        // 启用外健约束
+        db.setForeignKeyConstraintsEnabled(true);
         super.onConfigure(db);
-        Log.e("XIAOLEI", "LiteDataBase.onConfigure:" + db);
     }
 }

@@ -3,12 +3,14 @@ package me.xiaolei.room_lite.runtime.sqlite;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
@@ -21,12 +23,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.Suffix;
+import me.xiaolei.room_lite.runtime.util.RoomLiteUtil;
 
 public abstract class RoomLiteDatabase
 {
-    /**
-     * 数据库名称
-     */
+    // 数据库名称
     private final String dbName;
     // 数据库存放的位置
     private final File dbDir;
@@ -110,14 +111,6 @@ public abstract class RoomLiteDatabase
     }
 
     /**
-     * 获取数据库的Uri
-     */
-    public Uri getDbUri()
-    {
-        return dbUri;
-    }
-
-    /**
      * 获取一个子线程的Handler
      */
     public Handler getHandler()
@@ -143,7 +136,7 @@ public abstract class RoomLiteDatabase
      *
      * @param observer
      */
-    public void unregisterContentObserver(ContentObserver observer)
+    public void unregisterContentObserver(RoomLiteContentObserver observer)
     {
         resolver.unregisterContentObserver(observer);
     }
@@ -171,11 +164,11 @@ public abstract class RoomLiteDatabase
     }
 
     /**
-     * 初始化
+     * 第一次创建表
      *
-     * @param db
+     * @param database
      */
-    public void onOpen(SupportSQLiteDatabase db)
+    protected void onCreate(@NonNull SupportSQLiteDatabase database)
     {
         Class<?>[] entities = this.getEntities();
         for (Class<?> entity : entities)
@@ -183,28 +176,39 @@ public abstract class RoomLiteDatabase
             EntityHelper helper = this.helperCache.get(entity);
             assert helper != null;
             String sql = helper.getCreateSQL();
-            db.execSQL(sql);
+            database.execSQL(sql);
             String[] indexCreateSqls = helper.getCreateIndexSQL();
             Log.e("RoomLite", "建表:" + sql);
             for (String createSql : indexCreateSqls)
             {
                 Log.e("RoomLite", "索引:" + createSql);
-                db.execSQL(createSql);
+                database.execSQL(createSql);
             }
         }
+        Log.e("XIAOLEI", "onCreate");
     }
 
+    /**
+     * 每次连接上数据库<br/>
+     * 在这里就简单的对比一下表是否存在，如果涉及到复杂的索引更新，字段更新，那么要走更新的逻辑
+     *
+     * @param database
+     */
+    protected void onOpen(@NonNull SupportSQLiteDatabase database)
+    {
+       
+    }
 
     /**
      * 版本升级
      *
-     * @param db
+     * @param database
      * @param oldVersion 老版本号
      * @param newVersion 新版本号
      */
-    public void onUpgrade(@Nullable SupportSQLiteDatabase db, int oldVersion, int newVersion)
+    protected void onUpgrade(@Nullable SupportSQLiteDatabase database, int oldVersion, int newVersion)
     {
-
+        Log.e("XIAOLEI", "onUpgrade");
     }
 
     /**
