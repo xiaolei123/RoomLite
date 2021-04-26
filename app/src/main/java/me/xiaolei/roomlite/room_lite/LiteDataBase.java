@@ -4,6 +4,7 @@ package me.xiaolei.roomlite.room_lite;
 import android.database.sqlite.SQLiteDatabase;
 
 import androidx.annotation.Nullable;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
 
@@ -30,7 +31,7 @@ public class LiteDataBase extends RoomLiteDatabase
     }
 
     @Override
-    public void onUpgrade(@Nullable SQLiteDatabase db, int oldVersion, int newVersion)
+    public void onUpgrade(@Nullable SupportSQLiteDatabase db, int oldVersion, int newVersion)
     {
         super.onUpgrade(db, oldVersion, newVersion);
     }

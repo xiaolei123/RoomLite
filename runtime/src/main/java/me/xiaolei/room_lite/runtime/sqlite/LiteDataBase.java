@@ -1,7 +1,6 @@
 package me.xiaolei.room_lite.runtime.sqlite;
 
-
-import android.database.sqlite.SQLiteDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 /**
  * 对数据库的一层包装
@@ -17,13 +16,13 @@ public class LiteDataBase extends SQLiteDatabaseWrapper
     }
     
     @Override
-    public void onCreate(SQLiteDatabase db)
+    public void onCreate(SupportSQLiteDatabase db)
     {
         liteDatabase.onOpen(db);
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+    public void onUpgrade(SupportSQLiteDatabase db, int oldVersion, int newVersion)
     {
         liteDatabase.onUpgrade(db, oldVersion, newVersion);
     }

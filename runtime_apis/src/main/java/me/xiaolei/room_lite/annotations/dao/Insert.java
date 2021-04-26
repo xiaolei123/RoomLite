@@ -5,6 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import me.xiaolei.room_lite.ConflictAlgorithm;
+
 /**
  * <b>新增</b> 支持：<br/>
  * 参数：Entity / Entity[] / List&lt;Entity><br/>
@@ -14,5 +16,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface Insert
 {
-    
+    /**
+     * 冲突算法
+     */
+    ConflictAlgorithm conflict() default ConflictAlgorithm.NONE;
 }

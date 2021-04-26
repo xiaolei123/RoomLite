@@ -16,6 +16,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
+import me.xiaolei.room_lite.ConflictAlgorithm;
 import me.xiaolei.room_lite.SQLiteWriter;
 import me.xiaolei.room_lite.Suffix;
 import me.xiaolei.room_lite.annotations.Column;
@@ -488,6 +489,7 @@ public class EntityHelperUtils
                 .addException(Exception.class)
                 .addAnnotation(Override.class)
                 .addParameter(SQLiteWriter.class, "sqLite")
+                .addParameter(ConflictAlgorithm.class, "conflict")
                 .addParameter(Object.class, "obj");
 
         List<VariableElement> allFields = ElementUtil.getFields(element);
@@ -520,13 +522,13 @@ public class EntityHelperUtils
         }
 
         builder.addStatement("ContentValues obj_values = this.toContentValues(obj)");
-        builder.addStatement("sqLite.update($S,obj_values,joiner.toString(),values)", tableName);
+        builder.addStatement("sqLite.update($S,conflict.algorithm,obj_values,joiner.toString(),values)", tableName);
         builder.addStatement("return 1");
         return builder.build();
     }
 
     /**
-     * 更新记录
+     * 插入记录
      */
     public static MethodSpec insert(TypeElement element)
     {
@@ -536,6 +538,7 @@ public class EntityHelperUtils
                 .addException(Exception.class)
                 .addAnnotation(Override.class)
                 .addParameter(SQLiteWriter.class, "sqLite")
+                .addParameter(ConflictAlgorithm.class, "conflict")
                 .addParameter(Object.class, "obj");
 
         String entityType = element.asType().toString();
@@ -545,7 +548,7 @@ public class EntityHelperUtils
         builder.addStatement("if (!(obj instanceof $N)) throw new Exception(obj + \" not instanceof $N\")", entityType, entityType);
 
         builder.addStatement("ContentValues obj_values = this.toContentValues(obj)");
-        builder.addStatement("sqLite.insert($S,null,obj_values)", tableName);
+        builder.addStatement("sqLite.insert($S,conflict.algorithm,obj_values)", tableName);
         builder.addStatement("return 1");
         return builder.build();
     }

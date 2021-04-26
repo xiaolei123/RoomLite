@@ -1,8 +1,12 @@
 package me.xiaolei.room_lite.runtime.sqlite;
 
+import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+
+import androidx.sqlite.db.SupportSQLiteDatabase;
+import androidx.sqlite.db.SupportSQLiteOpenHelper;
+import androidx.sqlite.db.SupportSQLiteOpenHelper.Configuration;
+import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory;
 
 import java.io.Closeable;
 import java.util.concurrent.Callable;
@@ -17,18 +21,26 @@ import me.xiaolei.room_lite.runtime.util.ThreadPoolFactory;
 /**
  * 数据库操作类的包装类，主要致力于解决多线程并发读写的问题
  */
-public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements Closeable, SQLiteReader
+public abstract class SQLiteDatabaseWrapper extends SupportSQLiteOpenHelper.Callback implements Closeable, SQLiteReader
 {
-    private SQLiteDatabase readableDataBase;
-    private SQLiteDatabase writableDataBase;
+    private SupportSQLiteDatabase readableDataBase;
+    private SupportSQLiteDatabase writableDataBase;
     private Transaction transaction;
+    private final SupportSQLiteOpenHelper openHelper;
 
     // 写的线程池
     private final ExecutorService writeExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadPoolFactory("writeExecutor"));
 
     public SQLiteDatabaseWrapper(String dbPath, String name, int version)
     {
-        super(new CustomContentWrap(DataBaseProvider.context, dbPath), name, null, version);
+        super(version);
+        Context context = new CustomContentWrap(DataBaseProvider.context, dbPath);
+        Configuration configuration = Configuration.builder(context)
+                .name(name)
+                .callback(this)
+                .noBackupDirectory(false)
+                .build();
+        openHelper = new FrameworkSQLiteOpenHelperFactory().create(configuration);
     }
 
     @Override
@@ -55,14 +67,14 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
     @Override
     public Cursor rawQuery(String sql, String[] selectionArgs)
     {
-        SQLiteDatabase database = this.getReadableSQLiteDatabase();
-        return database.rawQuery(sql, selectionArgs);
+        SupportSQLiteDatabase database = this.getReadableSQLiteDatabase();
+        return database.query(sql, selectionArgs);
     }
 
     @Override
     public int getVersion()
     {
-        SQLiteDatabase database = this.getReadableSQLiteDatabase();
+        SupportSQLiteDatabase database = this.getReadableSQLiteDatabase();
         return database.getVersion();
     }
 
@@ -80,20 +92,20 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
     public void close()
     {
         writeExecutor.shutdownNow();
-        super.close();
+        openHelper.close();
     }
 
     /**
      * 获取只读数据库
      */
-    private SQLiteDatabase getReadableSQLiteDatabase()
+    private SupportSQLiteDatabase getReadableSQLiteDatabase()
     {
         if (readableDataBase == null)
         {
             synchronized (this)
             {
                 if (readableDataBase == null)
-                    readableDataBase = this.getReadableDatabase();
+                    readableDataBase = openHelper.getReadableDatabase();
             }
         }
         return readableDataBase;
@@ -102,7 +114,7 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
     /**
      * 获取只写数据库
      */
-    private SQLiteDatabase getWritableSQLiteDatabase()
+    private SupportSQLiteDatabase getWritableSQLiteDatabase()
     {
         if (writableDataBase == null)
         {
@@ -110,7 +122,7 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
             {
                 if (writableDataBase == null)
                 {
-                    writableDataBase = this.getWritableDatabase();
+                    writableDataBase = openHelper.getWritableDatabase();
                     transaction = new Transaction(writableDataBase);
                 }
             }
@@ -127,7 +139,7 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
      */
     private <T> T postWait(LiteRunnable<T> runnable)
     {
-        SQLiteDatabase database = this.getWritableSQLiteDatabase();
+        SupportSQLiteDatabase database = this.getWritableSQLiteDatabase();
         Callable<T> callable = () -> runnable.run(database);
         FutureTask<T> task = new FutureTask<T>(callable);
         this.writeExecutor.submit(task);
@@ -142,6 +154,6 @@ public abstract class SQLiteDatabaseWrapper extends SQLiteOpenHelper implements 
 
     private interface LiteRunnable<T>
     {
-        T run(SQLiteDatabase database);
+        T run(SupportSQLiteDatabase database);
     }
 }

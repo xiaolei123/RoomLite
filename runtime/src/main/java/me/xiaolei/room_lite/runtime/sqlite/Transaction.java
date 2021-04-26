@@ -2,7 +2,8 @@ package me.xiaolei.room_lite.runtime.sqlite;
 
 import android.content.ContentValues;
 import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
+
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import me.xiaolei.room_lite.SQLiteWriter;
 
@@ -12,9 +13,9 @@ import me.xiaolei.room_lite.SQLiteWriter;
 public class Transaction implements SQLiteWriter
 {
     // 真实操作的数据库
-    private final SQLiteDatabase database;
+    private final SupportSQLiteDatabase database;
 
-    public Transaction(SQLiteDatabase database)
+    public Transaction(SupportSQLiteDatabase database)
     {
         this.database = database;
     }
@@ -31,10 +32,11 @@ public class Transaction implements SQLiteWriter
         this.database.execSQL(sql, bindArgs);
     }
 
+    
     @Override
-    public long insert(String table, String nullColumnHack, ContentValues values)
+    public long insert(String table, int conflictAlgorithm, ContentValues values)
     {
-        return this.database.insert(table, nullColumnHack, values);
+        return this.database.insert(table, conflictAlgorithm, values);
     }
 
     @Override
@@ -42,10 +44,10 @@ public class Transaction implements SQLiteWriter
     {
         return this.database.delete(table, whereClause, whereArgs);
     }
-
+    
     @Override
-    public int update(String table, ContentValues values, String whereClause, String[] whereArgs)
+    public int update(String table, int conflictAlgorithm, ContentValues values, String whereClause, String[] whereArgs)
     {
-        return this.database.update(table, values, whereClause, whereArgs);
+        return this.database.update(table, conflictAlgorithm, values, whereClause, whereArgs);
     }
 }

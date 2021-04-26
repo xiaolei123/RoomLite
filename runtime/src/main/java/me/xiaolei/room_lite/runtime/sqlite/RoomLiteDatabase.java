@@ -10,6 +10,7 @@ import android.os.HandlerThread;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -173,7 +174,7 @@ public abstract class RoomLiteDatabase
      *
      * @param db
      */
-    public void onOpen(SQLiteDatabase db)
+    public void onOpen(SupportSQLiteDatabase db)
     {
         Class<?>[] entities = this.getEntities();
         for (Class<?> entity : entities)
@@ -200,7 +201,7 @@ public abstract class RoomLiteDatabase
      * @param oldVersion 老版本号
      * @param newVersion 新版本号
      */
-    public void onUpgrade(@Nullable SQLiteDatabase db, int oldVersion, int newVersion)
+    public void onUpgrade(@Nullable SupportSQLiteDatabase db, int oldVersion, int newVersion)
     {
 
     }

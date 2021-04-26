@@ -31,6 +31,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import me.xiaolei.room_lite.ConflictAlgorithm;
 import me.xiaolei.room_lite.EntityHelper;
 import me.xiaolei.room_lite.annotations.Entity;
 import me.xiaolei.room_lite.annotations.Limit;
@@ -73,6 +74,9 @@ public class DaoProcessorUtil
             throw new RuntimeException(method + "@Insert 注解支持的返回类型为: int void");
         }
 
+        // 获取冲突算法
+        ConflictAlgorithm conflict = insert.conflict();
+        // 定义执行结果
         builder.addStatement("$T changeCount = new AtomicInteger(0)", AtomicInteger.class);
         // 先循环参数，循环生成类型判断代码
         for (VariableElement param : params)
@@ -143,11 +147,11 @@ public class DaoProcessorUtil
             {
                 builder.addCode("for($N obj:$N)", entityTypeName, paramName);
                 builder.addCode("{");
-                builder.addStatement("changeCount.getAndAdd((int) $N.insert(transaction, obj))", helperName);
+                builder.addStatement("changeCount.getAndAdd((int) $N.insert(transaction,$T.$N, obj))", helperName, ConflictAlgorithm.class, conflict.name());
                 builder.addCode("}");
             } else if (TypeUtil.isEntity(paramType))
             {
-                builder.addStatement("changeCount.getAndAdd((int) $N.insert(transaction, $N))", helperName, paramName);
+                builder.addStatement("changeCount.getAndAdd((int) $N.insert(transaction,$T.$N, $N))", helperName, ConflictAlgorithm.class, conflict.name(), paramName);
             }
         }
         builder.addStatement("})");
@@ -286,7 +290,9 @@ public class DaoProcessorUtil
         {
             throw new RuntimeException(method + "@Update 注解支持的返回类型为: int void");
         }
-
+        // 获取冲突算法
+        ConflictAlgorithm conflict = update.conflict();
+        // 定义执行结果
         builder.addStatement("$T changeCount = new AtomicInteger(0)", AtomicInteger.class);
         // 先循环参数，循环生成类型判断代码
         for (VariableElement param : params)
@@ -357,11 +363,11 @@ public class DaoProcessorUtil
             {
                 builder.addCode("for($N obj:$N)", entityTypeName, paramName);
                 builder.addCode("{");
-                builder.addStatement("changeCount.getAndAdd((int) $N.update(transaction, obj))", helperName);
+                builder.addStatement("changeCount.getAndAdd((int) $N.update(transaction,$T.$N, obj))", helperName, ConflictAlgorithm.class, conflict.name());
                 builder.addCode("}");
             } else if (TypeUtil.isEntity(paramType))
             {
-                builder.addStatement("changeCount.getAndAdd((int) $N.update(transaction, $N))", helperName, paramName);
+                builder.addStatement("changeCount.getAndAdd((int) $N.update(transaction,$T.$N, $N))", helperName, ConflictAlgorithm.class, conflict.name(), paramName);
             }
         }
         builder.addStatement("})");
