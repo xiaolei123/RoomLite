@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import me.xiaolei.room_lite.Suffix;
 import me.xiaolei.room_lite.runtime.entity.EntityHelper;
+import me.xiaolei.room_lite.runtime.util.RoomLiteConfig;
 
 public abstract class RoomLiteDatabase
 {
@@ -38,6 +39,10 @@ public abstract class RoomLiteDatabase
     private final ContentResolver resolver;
     // 子线程的Handler
     private final Handler handler;
+    // context
+    private final Context context;
+    // 配置
+    private final RoomLiteConfig liteConfig;
 
     /**
      * 初始化数据库，
@@ -60,7 +65,7 @@ public abstract class RoomLiteDatabase
         this.dbName = dbName;
         this.dbDir = dbDir;
         this.database = new LiteDataBase(this);
-        Context context = DataBaseProvider.context;
+        this.context = DataBaseProvider.context;
         this.dbUri = new Uri.Builder().scheme("content")
                 .authority(context.getPackageName() + ".room_lite.provider")
                 .appendPath(dbName)
@@ -69,6 +74,8 @@ public abstract class RoomLiteDatabase
         HandlerThread thread = new HandlerThread(dbName + "-thread");
         thread.start();
         this.handler = new Handler(thread.getLooper());
+        this.liteConfig = new RoomLiteConfig(context, dbName);
+
         // 找到每个helper
         Class<?>[] entities = this.getEntities();
         if (entities == null || entities.length == 0)
@@ -87,6 +94,14 @@ public abstract class RoomLiteDatabase
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /**
+     * 获取上下文
+     */
+    public Context getContext()
+    {
+        return context;
     }
 
     /**
@@ -179,6 +194,9 @@ public abstract class RoomLiteDatabase
                 Log.e("RoomLite", "索引:" + createSql);
                 database.execSQL(createSql);
             }
+            // 保存对应的配置
+            String tableName = helper.getTableName();
+            liteConfig.saveTableSQLMessage(tableName, sql, indexCreateSqls);
         }
         Log.e("XIAOLEI", "onCreate");
     }
@@ -191,7 +209,18 @@ public abstract class RoomLiteDatabase
      */
     protected void onOpen(@NonNull SupportSQLiteDatabase database)
     {
-       
+        Class<?>[] entities = this.getEntities();
+        for (Class<?> entity : entities)
+        {
+            EntityHelper helper = this.helperCache.get(entity);
+            assert helper != null;
+            String sql = helper.getCreateSQL();
+            String[] indexCreateSqls = helper.getCreateIndexSQL();
+            // 对比对应的配置
+            String tableName = helper.getTableName();
+            if (!liteConfig.isSame(tableName, sql, indexCreateSqls))
+                throw new RuntimeException("@Entity与数据库内置的不一致，请使用数据库升级机制修复（升级数据库版本）");
+        }
     }
 
     /**
