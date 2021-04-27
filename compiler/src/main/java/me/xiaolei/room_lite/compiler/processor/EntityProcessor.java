@@ -2,18 +2,26 @@ package me.xiaolei.room_lite.compiler.processor;
 
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.WildcardTypeName;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
 import me.xiaolei.room_lite.Suffix;
 import me.xiaolei.room_lite.annotations.Entity;
@@ -42,11 +50,48 @@ public class EntityProcessor extends BaseProcessor
         try
         {
             logger.info("process-start");
+
+            TypeSpec.Builder helpersBuilder = TypeSpec.classBuilder("EntityHelpers")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addSuperinterface(Global.AutoGenera)
+                    .addAnnotation(Global.Keep);
+            // 定义字段
+            FieldSpec.Builder fieldBuilder = FieldSpec.builder(ParameterizedTypeName.get(Map.class, Class.class, Object.class), "helpers")
+                    .addModifiers(Modifier.PRIVATE, Modifier.FINAL);
+            CodeBlock.Builder fieldInitBuilder = CodeBlock.of("new $T<$T,$T>()", HashMap.class, Class.class, Object.class)
+                    .toBuilder()
+                    .add("{")
+                    .add("{");
+            // 获取所有的Entity
             Set<? extends Element> elements = environment.getElementsAnnotatedWith(Entity.class);
             for (Element element : elements)
             {
-                this.compiler((TypeElement) element);
+                TypeElement typeElement = (TypeElement) element;
+                // entity的类全名称
+                String entityQualifiedName = typeElement.getQualifiedName().toString();
+                // 生成的类的全名称
+                String helperQualifiedName = this.compiler(typeElement);
+                // 生成代码自动关联映射
+                fieldInitBuilder.addStatement("put($N.class,new $N())", entityQualifiedName, helperQualifiedName);
             }
+            fieldInitBuilder.add("}").add("}");
+            // 添加字段
+            helpersBuilder.addField(fieldBuilder.initializer(fieldInitBuilder.build()).build());
+
+            // 重写函数
+            MethodSpec maps = MethodSpec
+                    .methodBuilder("maps")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(Override.class)
+                    .addStatement("return helpers")
+                    .returns(ParameterizedTypeName.get(Map.class, Class.class, Object.class)).build();
+            
+            // 把字段放进类里
+            helpersBuilder.addMethod(maps);
+
+            TypeSpec helpers = helpersBuilder.build();
+            JavaFile javaFile = JavaFile.builder("me.xiaolei.room_lite.runtime.auto_genera", helpers).build();
+            javaFile.writeTo(filer);
         } catch (Exception e)
         {
             logger.error(e);
@@ -57,7 +102,7 @@ public class EntityProcessor extends BaseProcessor
         return true;
     }
 
-    private void compiler(TypeElement element) throws Exception
+    private String compiler(TypeElement element) throws Exception
     {
         // 首先检查Entity的合法性
         EntityHelperUtils.checkEntityLegitimate(element);
@@ -72,7 +117,7 @@ public class EntityProcessor extends BaseProcessor
         // 新建辅助类
         TypeSpec.Builder helperClass = TypeSpec.classBuilder(helperKlassName)
                 .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(Global.Keep)
+                //.addAnnotation(Global.Keep)
                 .addSuperinterface(Global.EntityHelper);
         // 构造函数
         MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
@@ -125,5 +170,6 @@ public class EntityProcessor extends BaseProcessor
         }
         JavaFile javaFile = JavaFile.builder(packageName, helperClass.build()).build();
         javaFile.writeTo(filer);
+        return packageName + "." + helperKlassName;
     }
 }

@@ -2,15 +2,20 @@ package me.xiaolei.room_lite.compiler.processor;
 
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -63,11 +68,47 @@ public class DaoProcessor extends BaseProcessor
         try
         {
             logger.info("process-start");
+
+            TypeSpec.Builder helpersBuilder = TypeSpec.classBuilder("DaoHelpers")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addSuperinterface(Global.AutoGenera)
+                    .addAnnotation(Global.Keep);
+            // 定义字段
+            FieldSpec.Builder fieldBuilder = FieldSpec.builder(ParameterizedTypeName.get(Map.class, Class.class, Object.class), "helpers")
+                    .addModifiers(Modifier.PRIVATE, Modifier.FINAL);
+            CodeBlock.Builder fieldInitBuilder = CodeBlock.of("new $T<$T,$T>()", HashMap.class, Class.class, Object.class)
+                    .toBuilder()
+                    .add("{")
+                    .add("{");
+
             Set<? extends Element> elements = environment.getElementsAnnotatedWith(Dao.class);
             for (Element element : elements)
             {
-                this.compiler((TypeElement) element);
+                TypeElement typeElement = (TypeElement) element;
+                // entity的类全名称
+                String entityQualifiedName = typeElement.getQualifiedName().toString();
+                // 生成的类的全名称
+                String helperQualifiedName = this.compiler(typeElement);
+                // 生成代码自动关联映射
+                fieldInitBuilder.addStatement("put($N.class,$N.class)", entityQualifiedName, helperQualifiedName);
             }
+            fieldInitBuilder.add("}").add("}");
+            // 添加字段
+            helpersBuilder.addField(fieldBuilder.initializer(fieldInitBuilder.build()).build());
+
+            // 重写函数
+            MethodSpec maps = MethodSpec
+                    .methodBuilder("maps")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(Override.class)
+                    .addStatement("return helpers")
+                    .returns(ParameterizedTypeName.get(Map.class, Class.class, Object.class)).build();
+
+            // 把字段放进类里
+            helpersBuilder.addMethod(maps);
+            TypeSpec helpers = helpersBuilder.build();
+            JavaFile javaFile = JavaFile.builder("me.xiaolei.room_lite.runtime.auto_genera", helpers).build();
+            javaFile.writeTo(filer);
         } catch (Exception e)
         {
             logger.error(e);
@@ -78,7 +119,7 @@ public class DaoProcessor extends BaseProcessor
         return false;
     }
 
-    private void compiler(TypeElement element) throws Exception
+    private String compiler(TypeElement element) throws Exception
     {
         // 日志里打印所有的Dao记录
         logger.info(element.asType().toString());
@@ -95,7 +136,7 @@ public class DaoProcessor extends BaseProcessor
         // 新建Dao的实现类
         TypeSpec.Builder implClass = TypeSpec.classBuilder(daoImplKlassName)
                 .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(Global.Keep)
+                //.addAnnotation(Global.Keep)
                 .addSuperinterface(klass);
         // 持有数据库的引用
         FieldSpec database = FieldSpec.builder(Global.RoomLiteDatabase, "database")
@@ -162,5 +203,7 @@ public class DaoProcessor extends BaseProcessor
 
         JavaFile javaFile = JavaFile.builder(packageName, implClass.build()).build();
         javaFile.writeTo(filer);
+
+        return packageName + "." + daoImplKlassName;
     }
 }

@@ -14,10 +14,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import me.xiaolei.room_lite.Suffix;
+import me.xiaolei.room_lite.runtime.RoomLite;
 import me.xiaolei.room_lite.runtime.entity.EntityHelper;
 import me.xiaolei.room_lite.runtime.util.RoomLiteConfig;
 
@@ -32,7 +31,7 @@ public abstract class RoomLiteDatabase
     // SQLite的执行对象
     private final LiteDataBase database;
     // 每个表的helper对象缓存
-    private final Map<Class<?>, EntityHelper> helperCache = new ConcurrentHashMap<>();
+    private final Map<Class<?>, EntityHelper> helperCache = RoomLite.entityHelpers;
     // 当前数据库的URI
     private final Uri dbUri;
     // 数据解析起
@@ -75,25 +74,6 @@ public abstract class RoomLiteDatabase
         thread.start();
         this.handler = new Handler(thread.getLooper());
         this.liteConfig = new RoomLiteConfig(context, dbName);
-
-        // 找到每个helper
-        Class<?>[] entities = this.getEntities();
-        if (entities == null || entities.length == 0)
-            throw new RuntimeException(this.getClass().getCanonicalName() + "的 getEntities() 函数返回的Entities不可以为空");
-        for (Class<?> entityKlass : entities)
-        {
-            String klassName = entityKlass.getSimpleName();
-            String packageName = Objects.requireNonNull(entityKlass.getPackage()).getName();
-            String helperName = packageName + "." + klassName + Suffix.helper_suffix;
-            try
-            {
-                Class<? extends EntityHelper> helperClass = (Class<? extends EntityHelper>) Class.forName(helperName);
-                helperCache.put(entityKlass, helperClass.newInstance());
-            } catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     /**
@@ -274,9 +254,7 @@ public abstract class RoomLiteDatabase
         {
             try
             {
-                String className = daoClass.getSimpleName();
-                String implClassName = daoClass.getPackage().getName() + "." + className + Suffix.dao_suffix;
-                Class<T> daoImplClass = (Class<T>) Class.forName(implClassName);
+                Class<T> daoImplClass = RoomLite.daoHelpers.get(daoClass);
                 Constructor<T> constructor = daoImplClass.getDeclaredConstructor(RoomLiteDatabase.class, LiteDataBase.class);
                 dao = (T) constructor.newInstance(this, this.database);
                 daoCache.put(daoClass, dao);
