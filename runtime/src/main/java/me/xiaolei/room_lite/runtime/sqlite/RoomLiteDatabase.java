@@ -260,6 +260,7 @@ public abstract class RoomLiteDatabase
                 daoCache.put(daoClass, dao);
             } catch (Exception e)
             {
+                Log.e("XIAOLEI", "" + e);
                 throw new RuntimeException(e);
             }
         }

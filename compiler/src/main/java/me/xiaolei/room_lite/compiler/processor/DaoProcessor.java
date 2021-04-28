@@ -153,6 +153,7 @@ public class DaoProcessor extends BaseProcessor
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(Global.RoomLiteDatabase, "database")
                 .addParameter(Global.LiteDataBase, "sqLite")
+                .addAnnotation(Global.Keep)
                 .addStatement("this.database = database")
                 .addStatement("this.sqLite = sqLite")
                 .build();
