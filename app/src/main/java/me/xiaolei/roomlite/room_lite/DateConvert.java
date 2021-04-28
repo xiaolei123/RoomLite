@@ -2,8 +2,10 @@ package me.xiaolei.roomlite.room_lite;
 
 import java.util.Date;
 
+import me.xiaolei.room_lite.annotations.AutoRegister;
 import me.xiaolei.room_lite.runtime.coverts.base.ToLongConvert;
 
+@AutoRegister
 public class DateConvert extends ToLongConvert<Date>
 {
     public DateConvert()
@@ -15,7 +17,7 @@ public class DateConvert extends ToLongConvert<Date>
     public Long convertToLong(Date javaObj)
     {
         Date date = (Date) javaObj;
-        if (javaObj == null) 
+        if (javaObj == null)
             return null;
         return date.getTime();
     }

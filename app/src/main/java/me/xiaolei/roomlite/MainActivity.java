@@ -31,9 +31,6 @@ public class MainActivity extends AppCompatActivity
         Button add_user = findViewById(R.id.add_user);
         Button delete_user = findViewById(R.id.delete_user);
 
-
-        RoomLite.addConvert(new DateConvert());
-
         LiteDataBase dataBase = RoomLite.build(LiteDataBase.class);
         UserDao userDao = dataBase.getDao(UserDao.class);
         PeopleDao peopleDao = dataBase.getDao(PeopleDao.class);

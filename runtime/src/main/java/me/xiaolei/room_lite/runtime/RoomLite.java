@@ -1,62 +1,117 @@
 package me.xiaolei.room_lite.runtime;
 
+
+import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import me.xiaolei.room_lite.runtime.adapters.Adapters;
-import me.xiaolei.room_lite.runtime.adapters.Adapter;
-import me.xiaolei.room_lite.runtime.coverts.Convert;
-import me.xiaolei.room_lite.runtime.coverts.Converts;
 import me.xiaolei.room_lite.runtime.entity.EntityHelper;
+import me.xiaolei.room_lite.runtime.sqlite.LiteDataBase;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
 import me.xiaolei.room_lite.runtime.util.AutoGenera;
+import me.xiaolei.room_lite.runtime.util.AutoRegister;
 
 public class RoomLite
 {
     // 缓存每个数据库
     private static final Map<Class<? extends RoomLiteDatabase>, RoomLiteDatabase> dataBaseCache = new ConcurrentHashMap<>();
     // 对每个表对应的helper进行缓存
-    public static final Map<Class<?>, EntityHelper> entityHelpers = new ConcurrentHashMap<Class<?>, EntityHelper>()
-    {
-        {
-            try
-            {
-                Class<?> helperClass = Class.forName("me.xiaolei.room_lite.runtime.auto_genera.EntityHelpers");
-                AutoGenera autoGenera = (AutoGenera) helperClass.newInstance();
-                Map<Class, Object> helpers = autoGenera.maps();
-                for (Map.Entry<Class, Object> entry : helpers.entrySet())
-                {
-                    Class<?> klass = entry.getKey();
-                    EntityHelper value = (EntityHelper) entry.getValue();
-                    put(klass, value);
-                }
-            } catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-    };
+    private static final Map<Class<?>, EntityHelper> entityHelpers = new ConcurrentHashMap<>();
     // 对每个dao的class进行缓存
-    public static final Map<Class<?>, Class> daoHelpers = new ConcurrentHashMap<Class<?>, Class>()
+    private static final Map<Class<?>, Class> daoHelpers = new ConcurrentHashMap<>();
+    // 缓存DAO对象
+    private static final Map<Class<?>, Object> daoCache = new ConcurrentHashMap<>();
+
+    static
     {
+        try
+        {
+            Class<?> helperClass = Class.forName("me.xiaolei.room_lite.runtime.auto_genera.AutoRegisterHelpers");
+            AutoRegister autoRegister = (AutoRegister) helperClass.newInstance();
+            autoRegister.register();
+        } catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Map<Class<?>, EntityHelper> getEntityHelpers()
+    {
+        if (entityHelpers.isEmpty())
+        {
+            synchronized (entityHelpers)
+            {
+                if (entityHelpers.isEmpty())
+                {
+                    try
+                    {
+                        Class<?> helperClass = Class.forName("me.xiaolei.room_lite.runtime.auto_genera.EntityHelpers");
+                        AutoGenera autoGenera = (AutoGenera) helperClass.newInstance();
+                        Map<Class, Object> helpers = autoGenera.maps();
+                        for (Map.Entry<Class, Object> entry : helpers.entrySet())
+                        {
+                            Class<?> klass = entry.getKey();
+                            EntityHelper value = (EntityHelper) entry.getValue();
+                            entityHelpers.put(klass, value);
+                        }
+                    } catch (Exception e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+        return entityHelpers;
+    }
+
+    private static Map<Class<?>, Class> getDaoHelpers()
+    {
+        if (daoHelpers.isEmpty())
+        {
+            synchronized (daoHelpers)
+            {
+                if (daoHelpers.isEmpty())
+                {
+                    try
+                    {
+                        Class<?> helperClass = Class.forName("me.xiaolei.room_lite.runtime.auto_genera.DaoHelpers");
+                        AutoGenera autoGenera = (AutoGenera) helperClass.newInstance();
+                        Map<Class, Object> helpers = autoGenera.maps();
+                        for (Map.Entry<Class, Object> entry : helpers.entrySet())
+                        {
+                            Class<?> klass = entry.getKey();
+                            Class value = (Class) entry.getValue();
+                            daoHelpers.put(klass, value);
+                        }
+                    } catch (Exception e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+        return daoHelpers;
+    }
+
+    public static <T> T getDao(Class<T> daoClass, RoomLiteDatabase database, LiteDataBase sqLite)
+    {
+        T dao = (T) daoCache.get(daoClass);
+        if (dao == null)
         {
             try
             {
-                Class<?> helperClass = Class.forName("me.xiaolei.room_lite.runtime.auto_genera.DaoHelpers");
-                AutoGenera autoGenera = (AutoGenera) helperClass.newInstance();
-                Map<Class, Object> helpers = autoGenera.maps();
-                for (Map.Entry<Class, Object> entry : helpers.entrySet())
-                {
-                    Class<?> klass = entry.getKey();
-                    Class value = (Class) entry.getValue();
-                    put(klass, value);
-                }
+                Map<Class<?>, Class> daoHelpers = getDaoHelpers();
+                Class<T> daoImplClass = daoHelpers.get(daoClass);
+                Constructor<T> constructor = daoImplClass.getDeclaredConstructor(RoomLiteDatabase.class, LiteDataBase.class);
+                dao = (T) constructor.newInstance(database, sqLite);
+                daoCache.put(daoClass, dao);
             } catch (Exception e)
             {
                 throw new RuntimeException(e);
             }
         }
-    };
+        return dao;
+    }
 
     public static <T extends RoomLiteDatabase> T build(Class<T> klass)
     {
@@ -66,6 +121,7 @@ public class RoomLite
             try
             {
                 database = klass.newInstance();
+                database.helperCache = getEntityHelpers();
                 dataBaseCache.put(klass, database);
             } catch (Exception e)
             {
@@ -73,26 +129,5 @@ public class RoomLite
             }
         }
         return database;
-    }
-
-
-    /**
-     * 配置转换器
-     *
-     * @param convert 转换器
-     */
-    public static void addConvert(Convert convert)
-    {
-        Converts.addConvert(convert);
-    }
-
-    /**
-     * 添加适配器
-     *
-     * @param adapter
-     */
-    public static void addAdapter(Adapter<?> adapter)
-    {
-        Adapters.addAdapter(adapter);
     }
 }

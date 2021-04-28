@@ -37,4 +37,5 @@ public class Global
     public static ClassName SQLiteWriter = ClassName.get("me.xiaolei.room_lite.runtime.sqlite", "SQLiteWriter");
     public static ClassName WriterRunnable = ClassName.get("me.xiaolei.room_lite.runtime.sqlite", "WriterRunnable");
     public static ClassName AutoGenera = ClassName.get("me.xiaolei.room_lite.runtime.util", "AutoGenera");
+    public static ClassName AutoRegister = ClassName.get("me.xiaolei.room_lite.runtime.util", "AutoRegister");
 }

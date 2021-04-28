@@ -12,9 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import me.xiaolei.room_lite.runtime.RoomLite;
 import me.xiaolei.room_lite.runtime.entity.EntityHelper;
@@ -26,12 +24,10 @@ public abstract class RoomLiteDatabase
     private final String dbName;
     // 数据库存放的位置
     private final File dbDir;
-    // 缓存DAO对象
-    private final Map<Class<?>, Object> daoCache = new ConcurrentHashMap<>();
     // SQLite的执行对象
     private final LiteDataBase database;
     // 每个表的helper对象缓存
-    private final Map<Class<?>, EntityHelper> helperCache = RoomLite.entityHelpers;
+    public Map<Class<?>, EntityHelper> helperCache;
     // 当前数据库的URI
     private final Uri dbUri;
     // 数据解析起
@@ -249,22 +245,7 @@ public abstract class RoomLiteDatabase
      */
     public <T> T getDao(Class<T> daoClass)
     {
-        T dao = (T) daoCache.get(daoClass);
-        if (dao == null)
-        {
-            try
-            {
-                Class<T> daoImplClass = RoomLite.daoHelpers.get(daoClass);
-                Constructor<T> constructor = daoImplClass.getDeclaredConstructor(RoomLiteDatabase.class, LiteDataBase.class);
-                dao = (T) constructor.newInstance(this, this.database);
-                daoCache.put(daoClass, dao);
-            } catch (Exception e)
-            {
-                Log.e("XIAOLEI", "" + e);
-                throw new RuntimeException(e);
-            }
-        }
-        return dao;
+        return RoomLite.getDao(daoClass, this, this.database);
     }
 
     /**
