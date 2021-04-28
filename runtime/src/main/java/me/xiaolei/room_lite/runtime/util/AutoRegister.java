@@ -1,7 +1,5 @@
 package me.xiaolei.room_lite.runtime.util;
 
-import androidx.annotation.Keep;
-
 import me.xiaolei.room_lite.runtime.adapters.Adapter;
 import me.xiaolei.room_lite.runtime.adapters.Adapters;
 import me.xiaolei.room_lite.runtime.coverts.Convert;
@@ -15,7 +13,6 @@ import me.xiaolei.room_lite.runtime.coverts.base.ToIntegerConvert;
 import me.xiaolei.room_lite.runtime.coverts.base.ToLongConvert;
 import me.xiaolei.room_lite.runtime.coverts.base.ToShortConvert;
 import me.xiaolei.room_lite.runtime.coverts.base.ToStringConvert;
-
 
 public abstract class AutoRegister
 {

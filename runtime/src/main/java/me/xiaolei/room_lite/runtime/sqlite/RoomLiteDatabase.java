@@ -233,7 +233,7 @@ public abstract class RoomLiteDatabase
      */
     public boolean allowRunOnUIThread()
     {
-        return false;
+        return true;
     }
 
     /**

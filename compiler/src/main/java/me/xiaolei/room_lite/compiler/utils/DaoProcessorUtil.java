@@ -2,13 +2,11 @@ package me.xiaolei.room_lite.compiler.utils;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -73,6 +71,7 @@ public class DaoProcessorUtil
             throw new RuntimeException(method + "@Insert 注解支持的返回类型为: int void");
         }
 
+        builder.addStatement("if (!this.database.allowRunOnUIThread() && $T.checkIsMainThread()) throw new $T($S)", Global.RoomLiteUtil, RuntimeException.class, "函数不能运行在主线程");
         // 获取冲突算法
         ConflictAlgorithm conflict = insert.conflict();
         // 定义执行结果
@@ -182,7 +181,7 @@ public class DaoProcessorUtil
         {
             throw new RuntimeException(method + "@Delete 注解支持的返回类型为: int void");
         }
-
+        builder.addStatement("if (!this.database.allowRunOnUIThread() && $T.checkIsMainThread()) throw new $T($S)", Global.RoomLiteUtil, RuntimeException.class, "函数不能运行在主线程");
         builder.addStatement("$T changeCount = new AtomicInteger(0)", AtomicInteger.class);
         // 先循环参数，循环生成类型判断代码
         for (VariableElement param : params)
@@ -289,6 +288,7 @@ public class DaoProcessorUtil
         {
             throw new RuntimeException(method + "@Update 注解支持的返回类型为: int void");
         }
+        builder.addStatement("if (!this.database.allowRunOnUIThread() && $T.checkIsMainThread()) throw new $T($S)", Global.RoomLiteUtil, RuntimeException.class, "函数不能运行在主线程");
         // 获取冲突算法
         ConflictAlgorithm conflict = update.conflict();
         // 定义执行结果
@@ -485,6 +485,7 @@ public class DaoProcessorUtil
 
         if (TypeUtil.isArray(returnType)) // 是数组
         {
+            builder.addStatement("if (!this.database.allowRunOnUIThread() && $T.checkIsMainThread()) throw new $T($S)", Global.RoomLiteUtil, RuntimeException.class, "函数不能运行在主线程");
             // 生成查询结果代码 try cache
             builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
             builder.addCode("{");
@@ -511,6 +512,7 @@ public class DaoProcessorUtil
             {
                 throw new RuntimeException(method + " List不支持通配符");
             }
+            builder.addStatement("if (!this.database.allowRunOnUIThread() && $T.checkIsMainThread()) throw new $T($S)", Global.RoomLiteUtil, RuntimeException.class, "函数不能运行在主线程");
             // 生成查询结果代码 try cache
             builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
             builder.addCode("{");
@@ -523,6 +525,7 @@ public class DaoProcessorUtil
             builder.addCode("}catch ($T e){throw new $T(e);}", Exception.class, RuntimeException.class);
         } else if (TypeUtil.isPrimitiveOrBox(returnType) || returnType.equals(entityClass)) // 是基础类型
         {
+            builder.addStatement("if (!this.database.allowRunOnUIThread() && $T.checkIsMainThread()) throw new $T($S)", Global.RoomLiteUtil, RuntimeException.class, "函数不能运行在主线程");
             // 生成查询结果代码 try cache
             builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
             builder.addCode("{");
@@ -559,6 +562,7 @@ public class DaoProcessorUtil
                 builder.addStatement("return ($T) adapter.process(processor,$T.class)", ClassName.get(type), ClassName.get(typeUtil.erasure(generic)));
             } else
             {
+                builder.addStatement("if (!this.database.allowRunOnUIThread() && $T.checkIsMainThread()) throw new $T($S)", Global.RoomLiteUtil, RuntimeException.class, "函数不能运行在主线程");
                 // 生成查询结果代码 try cache
                 builder.addCode("try($T cursor = this.sqLite.rawQuery($S, $N))", Global.Cursor, querySql, argsName);
                 builder.addCode("{");

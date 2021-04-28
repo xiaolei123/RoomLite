@@ -1,8 +1,6 @@
 package me.xiaolei.room_lite.runtime.util;
 
-import android.database.Cursor;
-
-import androidx.sqlite.db.SupportSQLiteDatabase;
+import android.os.Looper;
 
 public class RoomLiteUtil
 {
@@ -44,23 +42,10 @@ public class RoomLiteUtil
     }
 
     /**
-     * 检查表是否存在
-     *
-     * @param db        数据库
-     * @param tableName 表名
-     * @return 表是否存在
+     * 检查当前线程是否运行在主线程
      */
-    public static boolean checkTableExist(SupportSQLiteDatabase db, String tableName)
+    public static boolean checkIsMainThread()
     {
-        try (Cursor cursor = db.query("SELECT count(type) as count FROM sqlite_master WHERE type = 'table' AND name=?", new String[]{tableName}))
-        {
-            cursor.moveToNext();
-            int count = cursor.getInt(cursor.getColumnIndex("count"));
-            return count > 0;
-        } catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+        return Thread.currentThread() == Looper.getMainLooper().getThread();
     }
-
 }
