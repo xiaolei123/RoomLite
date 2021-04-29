@@ -12,10 +12,16 @@ import androidx.annotation.Nullable;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 import me.xiaolei.room_lite.runtime.RoomLite;
 import me.xiaolei.room_lite.runtime.entity.EntityHelper;
+import me.xiaolei.room_lite.runtime.upgrade.RenameColumnPack;
+import me.xiaolei.room_lite.runtime.upgrade.UpgradeOptions;
+import me.xiaolei.room_lite.runtime.util.LiteArrayList;
 import me.xiaolei.room_lite.runtime.util.RoomLiteConfig;
 
 public abstract class RoomLiteDatabase
@@ -202,13 +208,78 @@ public abstract class RoomLiteDatabase
     /**
      * 版本升级
      *
-     * @param database
+     * @param database   数据库操作类
      * @param oldVersion 老版本号
      * @param newVersion 新版本号
      */
     protected void onUpgrade(@Nullable SupportSQLiteDatabase database, int oldVersion, int newVersion)
     {
         Log.e("XIAOLEI", "onUpgrade");
+        LiteArrayList<UpgradeOptions> options = new LiteArrayList<>(this.onUpgradeOptions());
+        if (options.contains(obj -> obj.getOldVersion() == oldVersion))
+        {
+            UpgradeOptions option = options.findFirst(obj -> obj.getOldVersion() == oldVersion);
+            // 添加表
+            List<Class<?>> addTable = option.getAddTable();
+            // 删除表
+            List<Class<?>> dropTable = option.getDropTable();
+            // 重命名表
+            Map<String, Class<?>> renameTable = option.getRenameTable();
+            // 添加字段
+            Map<Class<?>, String> addColumn = option.getAddColumn();
+            // 重命名字段
+            List<RenameColumnPack> renameColumn = option.getRenameColumn();
+
+            // 添加表
+            for (Class<?> entityClass : addTable)
+            {
+                EntityHelper helper = getEntityHelper(entityClass);
+                assert helper != null;
+                String sql = helper.getCreateSQL();
+                database.execSQL(sql);
+                String[] indexCreateSqls = helper.getCreateIndexSQL();
+                Log.e("RoomLite", "建表:" + sql);
+                for (String createSql : indexCreateSqls)
+                {
+                    Log.e("RoomLite", "索引:" + createSql);
+                    database.execSQL(createSql);
+                }
+                // 保存对应的配置
+                String tableName = helper.getTableName();
+                liteConfig.saveTableSQLMessage(tableName, sql, indexCreateSqls);
+            }
+            // 删除表
+            for (Class<?> entityClass : dropTable)
+            {
+                EntityHelper helper = getEntityHelper(entityClass);
+                assert helper != null;
+                String tableName = helper.getTableName();
+                database.execSQL("DROP TABLE " + tableName);
+            }
+            // 重命名表
+            for (Map.Entry<String, Class<?>> entry : renameTable.entrySet())
+            {
+                String oldName = entry.getKey();
+                Class<?> newTable = entry.getValue();
+                EntityHelper helper = getEntityHelper(newTable);
+                assert helper != null;
+                String newName = helper.getTableName();
+                String sql = helper.getCreateSQL();
+                String[] indexCreateSqls = helper.getCreateIndexSQL();
+                database.execSQL("ALTER TABLE " + oldName + " RENAME TO " + newName);
+                liteConfig.saveTableSQLMessage(newName, sql, indexCreateSqls);
+            }
+            // 添加字段
+            
+        }
+    }
+
+    /**
+     * 获取更新的策略
+     */
+    public UpgradeOptions[] onUpgradeOptions()
+    {
+        return new UpgradeOptions[]{};
     }
 
     /**

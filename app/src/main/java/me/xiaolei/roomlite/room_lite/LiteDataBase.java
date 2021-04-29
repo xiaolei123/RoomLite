@@ -6,6 +6,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import me.xiaolei.room_lite.runtime.sqlite.DataBaseProvider;
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
+import me.xiaolei.room_lite.runtime.upgrade.UpgradeOptions;
 
 public class LiteDataBase extends RoomLiteDatabase
 {
@@ -22,6 +23,17 @@ public class LiteDataBase extends RoomLiteDatabase
         return new Class[]{};
     }
 
+    @Override
+    public UpgradeOptions[] onUpgradeOptions()
+    {
+        return new UpgradeOptions[]{
+                UpgradeOptions.upgrade(1, 2),
+                UpgradeOptions.upgrade(0, 1),
+                UpgradeOptions.upgrade(3, 4),
+                UpgradeOptions.upgrade(2, 3),
+        };
+    }
+
     // 是否允许在主线程中执行
     @Override
     public boolean allowRunOnUIThread()
@@ -33,6 +45,6 @@ public class LiteDataBase extends RoomLiteDatabase
     @Override
     public int version()
     {
-        return 1;
+        return 3;
     }
 }

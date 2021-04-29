@@ -277,9 +277,7 @@ public class EntityHelperUtils
         {
             VariableElement field = fields.get(i);
             String columnName = ElementUtil.getColumnName(field);
-            // 防止字段冲突，对字段使用 `` 进行包裹
-            String columnNameBox = "`" + columnName + "` ";
-            builder.addStatement("columnNames[$L] = $S", index++, columnNameBox);
+            builder.addStatement("columnNames[$L] = $S", index++, columnName);
         }
         builder.addStatement("return columnNames");
         return builder.build();
