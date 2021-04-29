@@ -105,7 +105,8 @@ public class EntityHelperUtils
             String convertFieldName = fieldName + Suffix.convert_suffix;
             // 在构造函数里进行获取
             constructor.addStatement("this.$N = $T.getConvert($T.class)", convertFieldName, Global.Converts, field.asType());
-
+            // 判断获取的转换器，如果没有获取到，则抛出异常
+            constructor.addStatement("if ($N == null) throw new $T($S)", convertFieldName, RuntimeException.class, field.asType() + "对应的转换器Convert未定义");
             fieldSpecs[i] = FieldSpec.builder(Global.Convert, convertFieldName, Modifier.PUBLIC)
                     .addModifiers(Modifier.FINAL)
                     .build();

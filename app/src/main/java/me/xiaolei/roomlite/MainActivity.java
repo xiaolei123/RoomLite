@@ -3,12 +3,10 @@ package me.xiaolei.roomlite;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
 import me.xiaolei.room_lite.runtime.RoomLite;
-import me.xiaolei.roomlite.room_lite.DateConvert;
 import me.xiaolei.roomlite.room_lite.LiteDataBase;
 import me.xiaolei.roomlite.room_lite.People;
 import me.xiaolei.roomlite.room_lite.PeopleDao;
