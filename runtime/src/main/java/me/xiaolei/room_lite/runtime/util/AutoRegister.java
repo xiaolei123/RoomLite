@@ -45,7 +45,7 @@ public abstract class AutoRegister
                 Converts.addConvert((Convert) (klass.newInstance()));
             } catch (Exception e)
             {
-                throw new RuntimeException(e);
+                throw new RuntimeException("创建 " + klass + " 对象发生异常:" + e);
             }
         }
     }

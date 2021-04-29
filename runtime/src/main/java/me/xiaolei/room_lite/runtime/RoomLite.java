@@ -31,7 +31,7 @@ public class RoomLite
             autoRegister.register();
         } catch (Exception e)
         {
-            throw new RuntimeException(e);
+            // 忽略反射自动注册类的异常
         }
     }
 
@@ -56,7 +56,7 @@ public class RoomLite
                         }
                     } catch (Exception e)
                     {
-                        throw new RuntimeException(e);
+                        // 忽略反射表帮助类的异常
                     }
                 }
             }
@@ -85,7 +85,7 @@ public class RoomLite
                         }
                     } catch (Exception e)
                     {
-                        throw new RuntimeException(e);
+                        // 忽略反射获取Dao帮助类的异常
                     }
                 }
             }
