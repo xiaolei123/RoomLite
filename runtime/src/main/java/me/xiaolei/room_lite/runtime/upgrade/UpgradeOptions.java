@@ -12,77 +12,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UpgradeOptions
 {
     // 要添加的表的集合
-    private final List<Class<?>> addTable = new LinkedList<>();
+    public final List<Class<?>> addTable = new LinkedList<>();
     // 要删除的表的集合
-    private final List<Class<?>> dropTable = new LinkedList<>();
+    public final List<Class<?>> dropTable = new LinkedList<>();
     // 重命名表名
-    private final Map<String, Class<?>> renameTable = new ConcurrentHashMap<>();
+    public final Map<String, Class<?>> renameTable = new ConcurrentHashMap<>();
     // 添加字段
-    private final Map<Class<?>, String> addColumn = new ConcurrentHashMap<>();
-    // 重命名字段名
-    private final List<RenameColumnPack> renameColumn = new LinkedList<>();
-
+    public final Map<Class<?>, String> addColumn = new ConcurrentHashMap<>();
     // 老版本
-    private final int oldVersion;
+    public final int oldVersion;
     // 新版本
-    private final int newVersion;
-
-    /**
-     * 获取要添加的表的集合
-     */
-    public List<Class<?>> getAddTable()
-    {
-        return addTable;
-    }
-
-    /**
-     * 获取要删除的表的集合
-     */
-    public List<Class<?>> getDropTable()
-    {
-        return dropTable;
-    }
-
-    /**
-     * 获取要重命名的表的集合
-     */
-    public Map<String, Class<?>> getRenameTable()
-    {
-        return renameTable;
-    }
-
-    /**
-     * 往某个表里新增一个字段
-     */
-    public Map<Class<?>, String> getAddColumn()
-    {
-        return addColumn;
-    }
+    public final int newVersion;
     
-
-    /**
-     * 获取重命名字段的集合
-     */
-    public List<RenameColumnPack> getRenameColumn()
-    {
-        return renameColumn;
-    }
-
-    /**
-     * 老版本
-     */
-    public int getOldVersion()
-    {
-        return oldVersion;
-    }
-
-    /**
-     * 新版本
-     */
-    public int getNewVersion()
-    {
-        return newVersion;
-    }
 
     private UpgradeOptions(int oldVersion, int newVersion)
     {
@@ -133,20 +74,6 @@ public class UpgradeOptions
     public UpgradeOptions addColumn(Class<?> entity, String columnName)
     {
         this.addColumn.put(entity, columnName);
-        return this;
-    }
-    
-
-    /**
-     * 重新命名字段
-     *
-     * @param entity        对应的表
-     * @param oldColumnName 旧名称
-     * @param newColumnName 新名称
-     */
-    public UpgradeOptions renameColumn(Class<?> entity, String oldColumnName, String newColumnName)
-    {
-        this.renameColumn.add(new RenameColumnPack(entity, oldColumnName, newColumnName));
         return this;
     }
 }
