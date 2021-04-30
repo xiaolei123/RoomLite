@@ -26,12 +26,15 @@ public class LiteDataBase extends RoomLiteDatabase
     {
         return true;
     }
-
+    
+    // 数据库升级
     @Override
     public UpgradeOptions[] upgradeOptions()
     {
         return new UpgradeOptions[]{
+                // 版本1升级版本2，更新了表User
                 UpgradeOptions.upgrade(1, 2).update(User.class),
+                // 版本2升级版本3，新增了个表User3
                 UpgradeOptions.upgrade(2, 3).addTable(User3.class)
         };
     }
