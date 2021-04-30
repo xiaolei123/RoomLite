@@ -26,12 +26,12 @@ public class User
     public short x_short;
     public byte x_byte;
     public double x_double;
-    public float x_float;
-    public long x_long;
-    public boolean x_bool;
-    public char x_char;
-    public Byte[] x_byte_array;
-    public Date date;
+    //public float x_float;
+    //public long x_long;
+    //public boolean x_bool;
+    //public char x_char;
+    //public Byte[] x_byte_array;
+    //public Date date;
 
     @Override
     public String toString()
@@ -42,11 +42,11 @@ public class User
                 ", x_short=" + x_short +
                 ", x_byte=" + x_byte +
                 ", x_double=" + x_double +
-                ", x_float=" + x_float +
-                ", x_long=" + x_long +
-                ", x_bool=" + x_bool +
-                ", x_char=" + x_char +
-                ", x_byte_array=" + Arrays.toString(x_byte_array) +
+                //", x_float=" + x_float +
+                //", x_long=" + x_long +
+                //", x_bool=" + x_bool +
+                //", x_char=" + x_char +
+                //", x_byte_array=" + Arrays.toString(x_byte_array) +
                 //", date=" + date +
                 '}';
     }

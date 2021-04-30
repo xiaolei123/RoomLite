@@ -19,8 +19,10 @@ import me.xiaolei.room_lite.ConflictAlgorithm;
 import me.xiaolei.room_lite.runtime.RoomLite;
 import me.xiaolei.room_lite.runtime.entity.EntityHelper;
 import me.xiaolei.room_lite.runtime.config.RoomLiteConfig;
+import me.xiaolei.room_lite.runtime.upgrade.RealUpdater;
 import me.xiaolei.room_lite.runtime.upgrade.TableUpdater;
 import me.xiaolei.room_lite.runtime.upgrade.UpgradeOptions;
+import me.xiaolei.room_lite.runtime.util.LiteArrayList;
 
 public abstract class RoomLiteDatabase
 {
@@ -136,21 +138,16 @@ public abstract class RoomLiteDatabase
      */
     public void notifyContent(String tableName)
     {
-        boolean hasTable = false;
         for (EntityHelper helper : helperCache.values())
         {
             if (tableName.equals(helper.getTableName()))
             {
-                hasTable = true;
+                resolver.notifyChange(dbUri.buildUpon()
+                        .appendPath(tableName)
+                        .build(), null);
                 break;
             }
         }
-        if (!hasTable)
-            throw new RuntimeException(tableName + "不在数据库:" + dbName + "中");
-        Uri tableUri = dbUri.buildUpon()
-                .appendPath(tableName)
-                .build();
-        resolver.notifyChange(tableUri, null);
     }
 
     /**
@@ -201,114 +198,30 @@ public abstract class RoomLiteDatabase
     }
 
     /**
-     * 版本升级
+     * 版本升级,这里不建议使用，因为这个API最好我们SDK内部使用，外部可以看看:
      *
      * @param database   数据库操作类
      * @param oldVersion 老版本号
      * @param newVersion 新版本号
+     * @see RoomLiteDatabase#upgradeOptions()
      */
+    @Deprecated
     protected void onUpgrade(@Nullable SupportSQLiteDatabase database, int oldVersion, int newVersion)
     {
         Log.e("XIAOLEI", "onUpgrade");
-        UpgradeOptions[] options = upgradeOptions();
-        for (UpgradeOptions option : options)
+        LiteArrayList<UpgradeOptions> options = new LiteArrayList<>(upgradeOptions());
+        UpgradeOptions option = options.findFirst(obj -> obj.oldVersion == oldVersion);
+        while (option != null)
         {
-            // 建表
-            for (Class<?> entity : option.addTable)
-            {
-                EntityHelper helper = this.helperCache.get(entity);
-                assert helper != null;
-                String sql = helper.getCreateSQL();
-                database.execSQL(sql);
-                String[] indexCreateSqls = helper.getCreateIndexSQL();
-                Log.e("RoomLite", "升级建表:" + sql);
-                for (String createSql : indexCreateSqls)
-                {
-                    Log.e("RoomLite", "升级添加索引:" + createSql);
-                    database.execSQL(createSql);
-                }
-                // 保存对应的配置
-                liteConfig.saveOrUpdateEntityMsg(helper);
-            }
-            // 删除表
-            for (String tableName : option.dropTable)
-            {
-                database.execSQL("DROP TABLE " + tableName);
-                Log.e("RoomLite", "删除表:" + tableName);
-                liteConfig.delMsg(tableName);
-            }
-            // 更新表
-            for (TableUpdater updater : option.updater)
-            {
-                String oldTableName = updater.getOldTableName();
-                Class<?> entity = updater.getEntity();
-                EntityHelper helper = this.helperCache.get(entity);
-                if (oldTableName == null || oldTableName.isEmpty()) // 从旧表迁移数据
-                {
-                    // 定义临时表名
-                    oldTableName = "RoomLite_tmp";
-                    // 获取表名
-                    String tableName = helper.getTableName();
-                    // 表改名为临时表
-                    database.execSQL("ALTER TABLE " + tableName + " RENAME TO " + oldTableName);
-                    // 首先删除老的索引
-                    String[] oldIndexNames = liteConfig.getIndexNames(tableName);
-                    for (String oldIndexName : oldIndexNames)
-                    {
-                        database.execSQL("DROP INDEX " + oldIndexName);
-                        Log.e("RoomLite", "删除索引:" + oldIndexName);
-                    }
-                    // 删除旧的验证数据
-                    liteConfig.delMsg(tableName);
-                } else
-                {
-                    // 首先删除老的索引
-                    String[] oldIndexNames = liteConfig.getIndexNames(oldTableName);
-                    for (String oldIndexName : oldIndexNames)
-                    {
-                        database.execSQL("DROP INDEX " + oldIndexName);
-                        Log.e("RoomLite", "删除索引:" + oldIndexName);
-                    }
-                    // 删除旧的验证数据
-                    liteConfig.delMsg(oldTableName);
-                }
-                
-                // 在新建新表
-                String sql = helper.getCreateSQL();
-                Log.e("RoomLite", "升级建表:" + sql);
-                database.execSQL(sql);
-                String[] indexSqls = helper.getCreateIndexSQL();
-                for (String indexSql : indexSqls)
-                {
-                    Log.e("RoomLite", "升级添加索引:" + indexSql);
-                    database.execSQL(indexSql);
-                }
-                // 保存对应的配置
-                liteConfig.saveOrUpdateEntityMsg(helper);
-                // 进行数据迁移
-                try (Cursor cursor = database.query("SELECT * FROM " + oldTableName))
-                {
-                    Transaction writer = new Transaction(database);
-                    while (cursor.moveToNext())
-                    {
-                        try
-                        {
-                            helper.insert(writer, ConflictAlgorithm.NONE, helper.fromCursor(cursor));
-                        } catch (Exception e)
-                        {
-                            e.printStackTrace();
-                        }
-                    }
-                } catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-                // 删除老表
-                database.execSQL("DROP TABLE " + oldTableName);
-            }
+            new RealUpdater(option, this, database, liteConfig).start();
+            int optionNewVersion = option.newVersion;
+            option = options.findFirst(obj -> obj.oldVersion == optionNewVersion);
         }
     }
 
+    /**
+     * 数据库升级
+     */
     public UpgradeOptions[] upgradeOptions()
     {
         return new UpgradeOptions[]{};

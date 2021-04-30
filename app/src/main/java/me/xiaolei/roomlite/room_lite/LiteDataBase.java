@@ -17,7 +17,7 @@ public class LiteDataBase extends RoomLiteDatabase
     @Override
     public Class<?>[] getEntities()
     {
-        return new Class[]{User.class, People.class};
+        return new Class[]{User.class, People.class,User3.class};
     }
 
     // 是否允许在主线程中执行
@@ -31,8 +31,8 @@ public class LiteDataBase extends RoomLiteDatabase
     public UpgradeOptions[] upgradeOptions()
     {
         return new UpgradeOptions[]{
-                UpgradeOptions.upgrade(1, 2)
-                        .update(new TableUpdater(User.class))
+                UpgradeOptions.upgrade(1, 2).update(User.class),
+                UpgradeOptions.upgrade(2, 3).addTable(User3.class)
         };
     }
 
@@ -40,6 +40,6 @@ public class LiteDataBase extends RoomLiteDatabase
     @Override
     public int version()
     {
-        return 2;
+        return 3;
     }
 }

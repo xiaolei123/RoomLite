@@ -1,6 +1,7 @@
 package me.xiaolei.room_lite.runtime.upgrade;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,8 @@ public class UpgradeOptions
     public final List<String> dropTable = new LinkedList<>();
     // 要更新的表的集合
     public final List<TableUpdater> updater = new LinkedList<>();
+    // 因为额外的需要，必须使用SQL语句的需求
+    public final Map<String, Object[]> sqls = new HashMap<>();
     // 老版本
     public final int oldVersion;
     // 新版本
@@ -63,4 +66,30 @@ public class UpgradeOptions
         return this;
     }
 
+    /**
+     * 表更新
+     */
+    public UpgradeOptions update(String oldTableName, Class<?> entity)
+    {
+        this.updater.add(new TableUpdater(oldTableName, entity));
+        return this;
+    }
+
+    /**
+     * 表更新
+     */
+    public UpgradeOptions update(Class<?> entity)
+    {
+        this.updater.add(new TableUpdater(entity));
+        return this;
+    }
+
+    /**
+     * 执行某些SQL语句
+     */
+    public UpgradeOptions execSQL(String sql, Object[] args)
+    {
+        this.sqls.put(sql, args);
+        return this;
+    }
 }
