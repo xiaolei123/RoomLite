@@ -8,7 +8,7 @@ import me.xiaolei.room_lite.annotations.Entity;
 import me.xiaolei.room_lite.annotations.Index;
 import me.xiaolei.room_lite.annotations.PrimaryKey;
 
-@Entity(name = "User", indices = {
+@Entity( indices = {
         @Index(columnNames = {"id", "name"}),
         @Index(name = "index2", columnNames = {"id", "name"}),
         @Index(name = "index3", columnNames = {"id", "name"}, unique = true),
@@ -47,7 +47,7 @@ public class User
                 ", x_bool=" + x_bool +
                 ", x_char=" + x_char +
                 ", x_byte_array=" + Arrays.toString(x_byte_array) +
-                ", date=" + date +
+                //", date=" + date +
                 '}';
     }
 }

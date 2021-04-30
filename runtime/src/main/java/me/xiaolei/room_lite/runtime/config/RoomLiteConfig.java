@@ -48,6 +48,43 @@ public class RoomLiteConfig
         editor.commit();
     }
 
+    /**
+     * 删除数据
+     */
+    public void delMsg(EntityHelper helper)
+    {
+        String tableName = helper.getTableName();
+        String spName = packageName + "." + dbName + "." + tableName + "." + suffix;
+        SharedPreferences sp = context.getSharedPreferences(spName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.clear().apply();
+        editor.commit();
+    }
+
+    /**
+     * 删除数据
+     */
+    public void delMsg(String tableName)
+    {
+        String spName = packageName + "." + dbName + "." + tableName + "." + suffix;
+        SharedPreferences sp = context.getSharedPreferences(spName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.clear().apply();
+        editor.commit();
+    }
+
+    /**
+     * 获取所有索引的名称
+     */
+    public String[] getIndexNames(String tableName)
+    {
+        String spName = packageName + "." + dbName + "." + tableName + "." + suffix;
+        SharedPreferences sp = context.getSharedPreferences(spName, Context.MODE_PRIVATE);
+        Set<String> indexNames = sp.getStringSet(INDEX_NAMES_KEY, new HashSet<>());
+        return indexNames.toArray(new String[0]);
+    }
+    
+
     public boolean isSame(EntityHelper helper)
     {
         String tableName = helper.getTableName();

@@ -14,16 +14,14 @@ public class UpgradeOptions
     // 要添加的表的集合
     public final List<Class<?>> addTable = new LinkedList<>();
     // 要删除的表的集合
-    public final List<Class<?>> dropTable = new LinkedList<>();
-    // 重命名表名
-    public final Map<String, Class<?>> renameTable = new ConcurrentHashMap<>();
-    // 添加字段
-    public final Map<Class<?>, String> addColumn = new ConcurrentHashMap<>();
+    public final List<String> dropTable = new LinkedList<>();
+    // 要更新的表的集合
+    public final List<TableUpdater> updater = new LinkedList<>();
     // 老版本
     public final int oldVersion;
     // 新版本
     public final int newVersion;
-    
+
 
     private UpgradeOptions(int oldVersion, int newVersion)
     {
@@ -50,30 +48,19 @@ public class UpgradeOptions
     /**
      * 删除表
      */
-    public UpgradeOptions dropTable(Class<?>... entities)
+    public UpgradeOptions dropTable(String... tableNames)
     {
-        this.dropTable.addAll(Arrays.asList(entities));
+        this.dropTable.addAll(Arrays.asList(tableNames));
         return this;
     }
 
     /**
-     * 重命名表
-     *
-     * @param oldTableName 旧表名
-     * @param newTable     新表
+     * 表更新
      */
-    public UpgradeOptions renameTable(String oldTableName, Class<?> newTable)
+    public UpgradeOptions update(TableUpdater... updaters)
     {
-        this.renameTable.put(oldTableName, newTable);
+        this.updater.addAll(Arrays.asList(updaters));
         return this;
     }
 
-    /**
-     * 添加某个表的字段
-     */
-    public UpgradeOptions addColumn(Class<?> entity, String columnName)
-    {
-        this.addColumn.put(entity, columnName);
-        return this;
-    }
 }

@@ -2,6 +2,8 @@ package me.xiaolei.roomlite.room_lite;
 
 
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
+import me.xiaolei.room_lite.runtime.upgrade.TableUpdater;
+import me.xiaolei.room_lite.runtime.upgrade.UpgradeOptions;
 
 public class LiteDataBase extends RoomLiteDatabase
 {
@@ -25,10 +27,19 @@ public class LiteDataBase extends RoomLiteDatabase
         return true;
     }
 
+    @Override
+    public UpgradeOptions[] upgradeOptions()
+    {
+        return new UpgradeOptions[]{
+                UpgradeOptions.upgrade(1, 2)
+                        .update(new TableUpdater(User.class))
+        };
+    }
+
     // 数据库版本
     @Override
     public int version()
     {
-        return 1;
+        return 2;
     }
 }
