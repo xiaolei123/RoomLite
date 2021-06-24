@@ -21,14 +21,14 @@ allprojects {
 ```gradle
 java:
 dependencies {
-    annotationProcessor 'com.github.xiaolei123.RoomLite:compiler:0.1.3'
-    implementation 'com.github.xiaolei123.RoomLite:runtime:0.1.3'
+    annotationProcessor 'com.github.xiaolei123.RoomLite:compiler:0.1.4'
+    implementation 'com.github.xiaolei123.RoomLite:runtime:0.1.4'
 }
 
 kotlin:
 dependencies {
-    kapt 'com.github.xiaolei123.RoomLite:compiler:0.1.3'
-    implementation 'com.github.xiaolei123.RoomLite:runtime:0.1.3'
+    kapt 'com.github.xiaolei123.RoomLite:compiler:0.1.4'
+    implementation 'com.github.xiaolei123.RoomLite:runtime:0.1.4'
 }
 
 
