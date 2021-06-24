@@ -2,8 +2,6 @@ package me.xiaolei.roomlite.room_lite;
 
 
 import me.xiaolei.room_lite.runtime.sqlite.RoomLiteDatabase;
-import me.xiaolei.room_lite.runtime.upgrade.TableUpdater;
-import me.xiaolei.room_lite.runtime.upgrade.UpgradeOptions;
 
 public class LiteDataBase extends RoomLiteDatabase
 {
@@ -25,18 +23,6 @@ public class LiteDataBase extends RoomLiteDatabase
     public boolean allowRunOnUIThread()
     {
         return true;
-    }
-    
-    // 数据库升级
-    @Override
-    public UpgradeOptions[] upgradeOptions()
-    {
-        return new UpgradeOptions[]{
-                // 版本1升级版本2，更新了表User
-                UpgradeOptions.upgrade(1, 2).update(User.class),
-                // 版本2升级版本3，新增了个表User3
-                UpgradeOptions.upgrade(2, 3).addTable(User3.class)
-        };
     }
 
     // 数据库版本

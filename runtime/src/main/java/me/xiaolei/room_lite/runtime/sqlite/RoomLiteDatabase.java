@@ -2,7 +2,6 @@ package me.xiaolei.room_lite.runtime.sqlite;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -15,12 +14,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import java.io.File;
 import java.util.Map;
 
-import me.xiaolei.room_lite.ConflictAlgorithm;
 import me.xiaolei.room_lite.runtime.RoomLite;
 import me.xiaolei.room_lite.runtime.entity.EntityHelper;
 import me.xiaolei.room_lite.runtime.config.RoomLiteConfig;
-import me.xiaolei.room_lite.runtime.upgrade.RealUpdater;
-import me.xiaolei.room_lite.runtime.upgrade.TableUpdater;
+import me.xiaolei.room_lite.runtime.upgrade.UpdateRunner;
 import me.xiaolei.room_lite.runtime.upgrade.UpgradeOptions;
 import me.xiaolei.room_lite.runtime.util.LiteArrayList;
 
@@ -213,7 +210,7 @@ public abstract class RoomLiteDatabase
         UpgradeOptions option = options.findFirst(obj -> obj.oldVersion == oldVersion);
         while (option != null)
         {
-            new RealUpdater(option, this, database, liteConfig).start();
+            new UpdateRunner(option, this, database, liteConfig).start();
             int optionNewVersion = option.newVersion;
             option = options.findFirst(obj -> obj.oldVersion == optionNewVersion);
         }
